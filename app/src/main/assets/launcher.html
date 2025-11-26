@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Android Web Launcher</title>
+    <title>Web Launcher</title>
     <style>
         * {
             margin: 0;
@@ -11,28 +11,49 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary-color: rgba(255, 255, 255, 0.1);
+            --secondary-color: rgba(255, 255, 255, 0.2);
+            --text-color: white;
+            --accent-color: #ffd700;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            color: var(--text-color);
             padding: 20px;
+            padding-bottom: 120px;
+            /* Fondo personalizable */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Mejorar rendimiento de scroll */
+            -webkit-overflow-scrolling: touch;
+            overflow-scrolling: touch;
         }
 
         .header {
             text-align: center;
             margin-bottom: 20px;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: var(--primary-color);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info {
+            flex: 1;
         }
 
         .time {
             font-size: 2.5em;
             font-weight: 300;
-            color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
@@ -40,6 +61,22 @@
             font-size: 1.1em;
             color: rgba(255, 255, 255, 0.8);
             margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            font-size: 1.2em;
         }
 
         .search-bar {
@@ -57,11 +94,26 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
+        /* Contenedor de apps con scroll optimizado */
+        .apps-container {
+            height: 60vh;
+            overflow-y: auto;
+            /* Mejorar rendimiento del scroll */
+            transform: translateZ(0);
+            -webkit-overflow-scrolling: touch;
+            will-change: transform;
+            scrollbar-width: none;
+        }
+
+        .apps-container::-webkit-scrollbar {
+            display: none;
+        }
+
         .apps-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 15px;
-            margin-bottom: 80px;
+            padding: 5px;
         }
 
         .app-item {
@@ -70,18 +122,29 @@
             align-items: center;
             padding: 15px 10px;
             border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            background: var(--primary-color);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--secondary-color);
+            cursor: grab;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+            /* Mejorar rendimiento de animaciones */
+            transform: translateZ(0);
         }
 
-        .app-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        .app-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .app-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .app-item.hidden {
+            display: none;
         }
 
         .app-icon {
@@ -90,62 +153,164 @@
             border-radius: 12px;
             margin-bottom: 8px;
             object-fit: cover;
+            /* Prevenir flickering */
+            backface-visibility: hidden;
+            transform: translateZ(0);
         }
 
         .app-name {
-            color: white;
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             font-weight: 500;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
             max-width: 70px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .dock {
+        .app-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .action-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dock mejorado con scroll horizontal */
+        .dock-container {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            left: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            backdrop-filter: blur(20px);
             border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--secondary-color);
+            padding: 15px;
+        }
+
+        .dock {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            /* Mejorar rendimiento del scroll horizontal */
+            transform: translateZ(0);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .dock::-webkit-scrollbar {
+            display: none;
         }
 
         .dock-app {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 12px;
             cursor: pointer;
             transition: transform 0.2s ease;
+            flex-shrink: 0;
+            object-fit: cover;
         }
 
         .dock-app:hover {
             transform: scale(1.1);
         }
 
-        .hidden {
-            display: none;
-        }
-
         .app-count {
             color: rgba(255, 255, 255, 0.7);
             font-size: 14px;
             margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Modal para fondo de pantalla */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--primary-color);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--secondary-color);
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            background: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Estados de drag and drop */
+        .drop-zone {
+            border: 2px dashed var(--accent-color);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .hidden-apps-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="time" id="currentTime">--:--</div>
-        <div class="date" id="currentDate">--- --, ----</div>
-        <div class="app-count" id="appCount">Cargando aplicaciones...</div>
+        <div class="header-info">
+            <div class="time" id="currentTime">--:--</div>
+            <div class="date" id="currentDate">--- --, ----</div>
+        </div>
+        <div class="controls">
+            <button class="control-btn" onclick="openWallpaperPicker()">🎨</button>
+            <button class="control-btn" onclick="toggleHiddenApps()">👁️</button>
+        </div>
     </div>
 
     <div class="search-bar">
@@ -153,55 +318,189 @@
                placeholder="🔍 Buscar aplicaciones..." oninput="filterApps()">
     </div>
 
-    <div class="apps-grid" id="appsGrid">
-        <div class="app-item">
-            <div class="app-icon" style="background: rgba(255,255,255,0.2);"></div>
-            <div class="app-name">Cargando...</div>
+    <div class="apps-container" id="appsContainer">
+        <div class="apps-grid" id="appsGrid">
+            <div class="app-item">
+                <div class="app-icon" style="background: rgba(255,255,255,0.2);"></div>
+                <div class="app-name">Cargando...</div>
+            </div>
         </div>
     </div>
 
-    <div class="dock" id="dock">
-        <!-- Las apps favoritas aparecerán aquí -->
+    <div class="dock-container">
+        <div class="dock" id="dock">
+            <!-- Apps favoritas aparecerán aquí -->
+        </div>
     </div>
+
+    <!-- Modal para fondo de pantalla -->
+    <div class="modal" id="wallpaperModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; text-align: center;">Cambiar Fondo de Pantalla</h3>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="selectWallpaperFromGallery()">Galería</button>
+                <button class="modal-btn" onclick="useDefaultWallpaper()">Predeterminado</button>
+                <button class="modal-btn" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="wallpaperInput" accept="image/*" style="display: none;">
 
     <script>
         let allApps = [];
         let favoriteApps = JSON.parse(localStorage.getItem('favoriteApps')) || [];
+        let hiddenApps = JSON.parse(localStorage.getItem('hiddenApps')) || [];
+        let appPositions = JSON.parse(localStorage.getItem('appPositions')) || {};
+        let isEditMode = false;
+        let dragStartX, dragStartY;
+        let currentDraggedApp = null;
 
         // Cargar aplicaciones desde Android
         window.loadAllApps = function(apps) {
             allApps = apps;
-            renderApps(allApps);
+            renderApps();
             updateTime();
             setInterval(updateTime, 1000);
-            
-            document.getElementById('appCount').textContent = `${apps.length} aplicaciones instaladas`;
+            updateAppCount();
         };
 
-        function renderApps(apps) {
+        function renderApps() {
             const grid = document.getElementById('appsGrid');
             grid.innerHTML = '';
 
-            apps.forEach(app => {
-                const appElement = document.createElement('div');
-                appElement.className = 'app-item';
-                appElement.onclick = () => launchApp(app.packageName);
-                appElement.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    toggleFavorite(app);
-                };
+            // Ordenar apps según posiciones guardadas
+            const sortedApps = [...allApps].sort((a, b) => {
+                const posA = appPositions[a.packageName] || 0;
+                const posB = appPositions[b.packageName] || 0;
+                return posA - posB;
+            });
 
-                appElement.innerHTML = `
-                    <img src="data:image/png;base64,${app.icon}" 
-                         class="app-icon" alt="${app.name}"
-                         onerror="this.style.display='none'">
-                    <div class="app-name">${app.name}</div>
-                `;
+            sortedApps.forEach((app, index) => {
+                if (!appPositions[app.packageName]) {
+                    appPositions[app.packageName] = index;
+                }
 
+                // Si la app está oculta, no renderizar
+                if (hiddenApps.includes(app.packageName)) {
+                    return;
+                }
+
+                const appElement = createAppElement(app);
                 grid.appendChild(appElement);
             });
 
             renderDock();
+            saveAppPositions();
+        }
+
+        function createAppElement(app) {
+            const appElement = document.createElement('div');
+            appElement.className = 'app-item';
+            appElement.setAttribute('data-package', app.packageName);
+            
+            const isFavorite = favoriteApps.includes(app.packageName);
+            
+            appElement.innerHTML = `
+                <img src="data:image/png;base64,${app.icon}" 
+                     class="app-icon" alt="${app.name}"
+                     onerror="this.style.background='rgba(255,255,255,0.2)'">
+                <div class="app-name">${app.name}</div>
+                <div class="app-actions">
+                    <button class="action-btn" onclick="event.stopPropagation(); toggleFavorite('${app.packageName}')">
+                        ${isFavorite ? '⭐' : '☆'}
+                    </button>
+                    <button class="action-btn" onclick="event.stopPropagation(); toggleAppVisibility('${app.packageName}')">
+                        ${hiddenApps.includes(app.packageName) ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                </div>
+            `;
+
+            // Eventos para drag and drop
+            setupDragAndDrop(appElement, app);
+
+            // Evento de clic para abrir app
+            appElement.addEventListener('click', (e) => {
+                if (!isEditMode) {
+                    launchApp(app.packageName);
+                }
+            });
+
+            return appElement;
+        }
+
+        function setupDragAndDrop(appElement, app) {
+            appElement.addEventListener('touchstart', handleTouchStart);
+            appElement.addEventListener('touchmove', handleTouchMove);
+            appElement.addEventListener('touchend', handleTouchEnd);
+            
+            appElement.addEventListener('mousedown', handleMouseDown);
+        }
+
+        function handleTouchStart(e) {
+            isEditMode = true;
+            const touch = e.touches[0];
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            currentDraggedApp = this;
+            this.classList.add('dragging');
+            e.preventDefault();
+        }
+
+        function handleTouchMove(e) {
+            if (!currentDraggedApp) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - dragStartX;
+            const deltaY = touch.clientY - dragStartY;
+            
+            if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+                currentDraggedApp.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            }
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            if (currentDraggedApp) {
+                currentDraggedApp.classList.remove('dragging');
+                currentDraggedApp.style.transform = '';
+                currentDraggedApp = null;
+                isEditMode = false;
+                saveAppPositions();
+            }
+        }
+
+        function handleMouseDown(e) {
+            isEditMode = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            currentDraggedApp = this;
+            this.classList.add('dragging');
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        function handleMouseMove(e) {
+            if (!currentDraggedApp) return;
+            
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            
+            currentDraggedApp.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        }
+
+        function handleMouseUp(e) {
+            if (currentDraggedApp) {
+                currentDraggedApp.classList.remove('dragging');
+                currentDraggedApp.style.transform = '';
+                currentDraggedApp = null;
+                isEditMode = false;
+                saveAppPositions();
+            }
+            
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
         }
 
         function renderDock() {
@@ -220,40 +519,83 @@
                     dock.appendChild(dockApp);
                 }
             });
+
+            if (favoriteApps.length === 0) {
+                dock.innerHTML = '<div style="color: rgba(255,255,255,0.7); padding: 10px; text-align: center;">Toque el ☆ en cualquier app para agregar al dock</div>';
+            }
         }
 
         function launchApp(packageName) {
-            if (typeof Android !== 'undefined' && Android.launchApp) {
+            if (typeof Android !== 'undefined' && Android.launchApp && !isEditMode) {
                 Android.launchApp(packageName);
             }
         }
 
-        function toggleFavorite(app) {
-            const index = favoriteApps.indexOf(app.packageName);
+        function toggleFavorite(packageName) {
+            const index = favoriteApps.indexOf(packageName);
             if (index > -1) {
                 favoriteApps.splice(index, 1);
-                Android.showToast(`Removido de favoritos: ${app.name}`);
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast(`Removido de favoritos`);
+                }
             } else {
-                favoriteApps.push(app.packageName);
-                Android.showToast(`Agregado a favoritos: ${app.name}`);
-                
-                // Mantener máximo 6 apps en el dock
-                if (favoriteApps.length > 6) {
-                    favoriteApps.shift();
+                favoriteApps.push(packageName);
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast(`Agregado a favoritos`);
                 }
             }
             localStorage.setItem('favoriteApps', JSON.stringify(favoriteApps));
-            renderDock();
+            renderApps();
+        }
+
+        function toggleAppVisibility(packageName) {
+            const index = hiddenApps.indexOf(packageName);
+            if (index > -1) {
+                hiddenApps.splice(index, 1);
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast(`App mostrada`);
+                }
+            } else {
+                hiddenApps.push(packageName);
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast(`App ocultada`);
+                }
+            }
+            localStorage.setItem('hiddenApps', JSON.stringify(hiddenApps));
+            renderApps();
+            updateAppCount();
+        }
+
+        function toggleHiddenApps() {
+            // Alternar entre mostrar/ocultar apps ocultas
+            const showingHidden = hiddenApps.length === 0;
+            if (showingHidden) {
+                // Cargar apps ocultas desde localStorage
+                hiddenApps = JSON.parse(localStorage.getItem('hiddenApps')) || [];
+            } else {
+                hiddenApps = [];
+            }
+            renderApps();
+            updateAppCount();
         }
 
         function filterApps() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredApps = allApps.filter(app => 
-                app.name.toLowerCase().includes(searchTerm)
-            );
-            renderApps(filteredApps);
+            const appItems = document.querySelectorAll('.app-item');
+            
+            let visibleCount = 0;
+            appItems.forEach(item => {
+                const appName = item.querySelector('.app-name').textContent.toLowerCase();
+                if (appName.includes(searchTerm)) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            
             document.getElementById('appCount').textContent = 
-                `${filteredApps.length} aplicaciones encontradas`;
+                `${visibleCount} aplicaciones encontradas`;
         }
 
         function updateTime() {
@@ -274,17 +616,74 @@
                 dateString.charAt(0).toUpperCase() + dateString.slice(1);
         }
 
+        function updateAppCount() {
+            const visibleApps = allApps.filter(app => !hiddenApps.includes(app.packageName)).length;
+            const countElement = document.getElementById('appCount') || createAppCountElement();
+            countElement.textContent = `${visibleApps} apps • ${favoriteApps.length} favoritos • ${hiddenApps.length} ocultas`;
+        }
+
+        function createAppCountElement() {
+            const countElement = document.createElement('div');
+            countElement.className = 'app-count';
+            countElement.id = 'appCount';
+            document.querySelector('.header-info').appendChild(countElement);
+            return countElement;
+        }
+
+        function saveAppPositions() {
+            localStorage.setItem('appPositions', JSON.stringify(appPositions));
+        }
+
+        // Funciones para fondo de pantalla
+        function openWallpaperPicker() {
+            document.getElementById('wallpaperModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('wallpaperModal').style.display = 'none';
+        }
+
+        function selectWallpaperFromGallery() {
+            document.getElementById('wallpaperInput').click();
+            closeModal();
+        }
+
+        function useDefaultWallpaper() {
+            document.body.style.backgroundImage = '';
+            localStorage.removeItem('customWallpaper');
+            closeModal();
+        }
+
+        document.getElementById('wallpaperInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    document.body.style.backgroundImage = `url(${imageUrl})`;
+                    localStorage.setItem('customWallpaper', imageUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Cargar fondo personalizado al iniciar
+        const savedWallpaper = localStorage.getItem('customWallpaper');
+        if (savedWallpaper) {
+            document.body.style.backgroundImage = `url(${savedWallpaper})`;
+        }
+
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             updateTime();
+            updateAppCount();
             
-            // Verificar si Android interface está disponible
-            setTimeout(() => {
-                if (typeof Android === 'undefined') {
-                    document.getElementById('appCount').textContent = 
-                        "Error: Interfaz Android no disponible";
+            // Prevenir zoom no deseado
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
                 }
-            }, 2000);
+            }, { passive: false });
         });
     </script>
 </body>
