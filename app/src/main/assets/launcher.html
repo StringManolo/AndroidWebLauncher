@@ -1,276 +1,291 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8">
+<html>
+<head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Launcher</title>
+    <title>Android Web Launcher</title>
     <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
         }
 
         .header {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          padding: 20px;
-          text-align: center;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .time {
-          font-size: 3em;
-          font-weight: 300;
-          color: white;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 2.5em;
+            font-weight: 300;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .date {
-          font-size: 1.2em;
-          color: rgba(255, 255, 255, 0.8);
-          margin-top: 5px;
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
         }
 
         .search-bar {
-          margin: 20px auto;
-          max-width: 500px;
-          padding: 0 20px;
+            margin: 20px 0;
         }
 
         .search-input {
-          width: 100%;
-          padding: 15px 20px;
-          border: none;
-          border-radius: 25px;
-          background: rgba(255, 255, 255, 0.9);
-          font-size: 16px;
-          outline: none;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .apps-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-          gap: 20px;
-          padding: 20px;
-          max-width: 1200px;
-          margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-bottom: 80px;
         }
 
         .app-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 15px 10px;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .app-item:hover {
-          transform: translateY(-5px);
-          background: rgba(255, 255, 255, 0.2);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .app-icon {
-          width: 50px;
-          height: 50px;
-          border-radius: 12px;
-          margin-bottom: 8px;
-          object-fit: cover;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            object-fit: cover;
         }
 
         .app-name {
-          color: white;
-          font-size: 12px;
-          text-align: center;
-          font-weight: 500;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-          max-width: 70px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .dock {
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          gap: 15px;
-          padding: 15px 25px;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border-radius: 25px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .dock-app {
-          width: 45px;
-          height: 45px;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: transform 0.2s ease;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
 
         .dock-app:hover {
-          transform: scale(1.1);
+            transform: scale(1.1);
         }
 
         .hidden {
-          display: none;
+            display: none;
         }
 
-        .glass {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+        .app-count {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-top: 10px;
         }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="header">
-      <div class="time" id="currentTime">--:--</div>
-      <div class="date" id="currentDate">--- --, ----</div>
+        <div class="time" id="currentTime">--:--</div>
+        <div class="date" id="currentDate">--- --, ----</div>
+        <div class="app-count" id="appCount">Cargando aplicaciones...</div>
     </div>
 
     <div class="search-bar">
-      <input type="text" class="search-input" id="searchInput" 
-                                              placeholder="🔍 Buscar aplicaciones..." oninput="filterApps()">
+        <input type="text" class="search-input" id="searchInput" 
+               placeholder="🔍 Buscar aplicaciones..." oninput="filterApps()">
     </div>
 
     <div class="apps-grid" id="appsGrid">
-      <!-- Las aplicaciones se cargarán aquí dinámicamente -->
+        <div class="app-item">
+            <div class="app-icon" style="background: rgba(255,255,255,0.2);"></div>
+            <div class="app-name">Cargando...</div>
+        </div>
     </div>
 
     <div class="dock" id="dock">
-      <!-- Apps favoritas en el dock -->
+        <!-- Las apps favoritas aparecerán aquí -->
     </div>
 
     <script>
-      let allApps = [];
-      let favoriteApps = JSON.parse(localStorage.getItem('favoriteApps')) || [];
+        let allApps = [];
+        let favoriteApps = JSON.parse(localStorage.getItem('favoriteApps')) || [];
 
-      window.loadApps = function(apps) {
-        allApps = apps;
-        renderApps(allApps);
-        renderDock();
-        updateTime();
-        setInterval(updateTime, 1000);
-      };
+        // Cargar aplicaciones desde Android
+        window.loadAllApps = function(apps) {
+            allApps = apps;
+            renderApps(allApps);
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            document.getElementById('appCount').textContent = `${apps.length} aplicaciones instaladas`;
+        };
 
-      function renderApps(apps) {
-        const grid = document.getElementById('appsGrid');
-        grid.innerHTML = '';
+        function renderApps(apps) {
+            const grid = document.getElementById('appsGrid');
+            grid.innerHTML = '';
 
-        apps.forEach(app => {
-          const appElement = document.createElement('div');
-          appElement.className = 'app-item';
-          appElement.onclick = () => launchApp(app.packageName);
-          appElement.oncontextmenu = (e) => {
-            e.preventDefault();
-            toggleFavorite(app);
-          };
+            apps.forEach(app => {
+                const appElement = document.createElement('div');
+                appElement.className = 'app-item';
+                appElement.onclick = () => launchApp(app.packageName);
+                appElement.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    toggleFavorite(app);
+                };
 
-          appElement.innerHTML = `
+                appElement.innerHTML = `
                     <img src="data:image/png;base64,${app.icon}" 
-                         class="app-icon" alt="${app.name}">
+                         class="app-icon" alt="${app.name}"
+                         onerror="this.style.display='none'">
                     <div class="app-name">${app.name}</div>
                 `;
 
-          grid.appendChild(appElement);
-        });
-      }
+                grid.appendChild(appElement);
+            });
 
-      function renderDock() {
-        const dock = document.getElementById('dock');
-        dock.innerHTML = '';
-
-        favoriteApps.forEach(packageName => {
-          const app = allApps.find(a => a.packageName === packageName);
-          if (app) {
-            const dockApp = document.createElement('img');
-            dockApp.className = 'dock-app';
-            dockApp.src = `data:image/png;base64,${app.icon}`;
-            dockApp.alt = app.name;
-            dockApp.title = app.name;
-            dockApp.onclick = () => launchApp(app.packageName);
-            dock.appendChild(dockApp);
-          }
-        });
-      }
-
-      function launchApp(packageName) {
-        Android.launchApp(packageName);
-      }
-
-      function toggleFavorite(app) {
-        const index = favoriteApps.indexOf(app.packageName);
-        if (index > -1) {
-          favoriteApps.splice(index, 1);
-        } else {
-          favoriteApps.push(app.packageName);
-          if (favoriteApps.length > 5) {
-            favoriteApps.shift();
-          }
+            renderDock();
         }
-        localStorage.setItem('favoriteApps', JSON.stringify(favoriteApps));
-        renderDock();
-      }
 
-      function filterApps() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const filteredApps = allApps.filter(app => 
-          app.name.toLowerCase().includes(searchTerm)
-        );
-        renderApps(filteredApps);
-      }
+        function renderDock() {
+            const dock = document.getElementById('dock');
+            dock.innerHTML = '';
 
-      function updateTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('es-ES', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+            favoriteApps.forEach(packageName => {
+                const app = allApps.find(a => a.packageName === packageName);
+                if (app) {
+                    const dockApp = document.createElement('img');
+                    dockApp.className = 'dock-app';
+                    dockApp.src = `data:image/png;base64,${app.icon}`;
+                    dockApp.alt = app.name;
+                    dockApp.title = app.name;
+                    dockApp.onclick = () => launchApp(app.packageName);
+                    dock.appendChild(dockApp);
+                }
+            });
+        }
+
+        function launchApp(packageName) {
+            if (typeof Android !== 'undefined' && Android.launchApp) {
+                Android.launchApp(packageName);
+            }
+        }
+
+        function toggleFavorite(app) {
+            const index = favoriteApps.indexOf(app.packageName);
+            if (index > -1) {
+                favoriteApps.splice(index, 1);
+                Android.showToast(`Removido de favoritos: ${app.name}`);
+            } else {
+                favoriteApps.push(app.packageName);
+                Android.showToast(`Agregado a favoritos: ${app.name}`);
+                
+                // Mantener máximo 6 apps en el dock
+                if (favoriteApps.length > 6) {
+                    favoriteApps.shift();
+                }
+            }
+            localStorage.setItem('favoriteApps', JSON.stringify(favoriteApps));
+            renderDock();
+        }
+
+        function filterApps() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredApps = allApps.filter(app => 
+                app.name.toLowerCase().includes(searchTerm)
+            );
+            renderApps(filteredApps);
+            document.getElementById('appCount').textContent = 
+                `${filteredApps.length} aplicaciones encontradas`;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const dateString = now.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = 
+                dateString.charAt(0).toUpperCase() + dateString.slice(1);
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            
+            // Verificar si Android interface está disponible
+            setTimeout(() => {
+                if (typeof Android === 'undefined') {
+                    document.getElementById('appCount').textContent = 
+                        "Error: Interfaz Android no disponible";
+                }
+            }, 2000);
         });
-        const dateString = now.toLocaleDateString('es-ES', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-
-        document.getElementById('currentTime').textContent = timeString;
-        document.getElementById('currentDate').textContent = 
-          dateString.charAt(0).toUpperCase() + dateString.slice(1);
-      }
-
-      document.addEventListener('DOMContentLoaded', function() {
-        const appItems = document.querySelectorAll('.app-item');
-
-        appItems.forEach(item => {
-          item.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.95)';
-          });
-
-          item.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
-          });
-        });
-      });
     </script>
-  </body>
+</body>
 </html>
