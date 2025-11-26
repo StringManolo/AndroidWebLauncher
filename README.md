@@ -1,123 +1,169 @@
-# Hello World: Minimal Kotin APK Template
+# Android Web Launcher 🚀
 
-**Compile Android APKs in 2 minutes - ZERO installation required!**
+Un launcher moderno para Android desarrollado con Kotlin, XML, HTML, CSS y JavaScript. 
 
-> **Just click "Use this template" and start coding - no Android Studio, no SDK, no JDK needed!**
+## ✨ Características
 
-## 🚀 How It Works
+### 🎨 Interfaz Moderna
+- **Diseño Glassmorphism** con efectos de vidrio esmerilado
+- **Tema oscuro moderno** con gradientes azules
+- **Animaciones fluidas** y transiciones suaves
+- **Responsive** que se adapta a orientación vertical y horizontal
 
-This template uses **GitHub Actions** to compile your APK automatically. You only need a GitHub account - no development tools required!
+### 🎯 Gestos Inteligentes
+- **Tap rápido** (<500ms): Lanzar aplicación
+- **Mantener 1s + arrastrar**: Reordenar apps
+- **Mantener 2s**: Agregar/remover de favoritos
+- **Mantener 4s**: Ocultar/mostrar aplicación
+- **Mantener 6s**: Desinstalar (con confirmación)
+- **Mantener 4s en el header**: Mostrar apps ocultas
+- **Doble tap en header**: Selector de fondo
 
-### 3-Step Process:
-1. **Click "Use this template"** → Create your repository
-2. **Edit code directly on GitHub**
-3. **Download APK from Actions tab**
+### 📱 Funcionalidades Principales
+- **Dock con scroll horizontal** infinito para apps favoritas
+- **Búsqueda en tiempo real** de aplicaciones
+- **Reordenación por drag & drop** con feedback visual
+- **Sistema de apps ocultas** para mantener el launcher limpio
+- **Fondo de pantalla personalizable** desde galería
+- **Reloj y fecha** en tiempo real
 
-Your APK compiles automatically on every code change!
+### 🔧 Personalización
+- **Interfaz web completa** - modifica HTML/CSS/JS fácilmente
+- **Temas CSS** con variables CSS fácilmente editables
+- **Comportamiento personalizable** mediante JavaScript
+- **Persistencia de configuraciones** en localStorage
 
-## 🎯 Get Started Now
+## 🛠️ Instalación
 
-### Step 1: Create Your Project
-- Click the **"Use this template"** button above
-- Name your new repository
-- Create it
+### Configuración como Launcher Predeterminado
+1. **Presiona el botón Home** en tu dispositivo
+2. **Selecciona "Web Launcher"** de la lista
+3. **Elige "Siempre"** para establecerlo como predeterminado
 
-### Step 2: Customize Your App
-Edit these files directly on GitHub:
+## 🎮 Cómo Usar
 
-| File | What to Change |
-|------|----------------|
-| `app/src/main/res/values/strings.xml` | App name & text |
-| `app/src/main/res/layout/activity_main.xml` | UI layout |
-| `app/src/main/res/values/colors.xml` | Color scheme |
-| `app/src/main/java/.../MainActivity.kt` | App logic |
+### Navegación Básica
+- **Abrir apps**: Toca cualquier icono de aplicación
+- **Buscar**: Escribe en la barra de búsqueda superior
+- **Scroll**: Desliza verticalmente para ver todas las apps
+- **Dock**: Desliza horizontalmente en el dock para ver más favoritos
 
-### Step 3: Get Your APK
-1. After saving changes, go to **Actions** tab
-2. Click the latest workflow run
-3. Download the `app-debug-apk` artifact
-4. Install on your Android device!
+### Gestos Avanzados
+| Gestor | Duración | Acción |
+|--------|----------|--------|
+| 👆 Tap rápido | < 500ms | Lanzar app |
+| 👆 Mantener + arrastrar | 1s + | Reordenar apps |
+| 👆 Mantener | 2s | Agregar/remover favoritos |
+| 👆 Mantener | 4s | Ocultar/mostrar app |
+| 👆 Mantener | 6s | Desinstalar (con confirmación) |
+| 👆 Mantener en header | 4s | Mostrar/ocultar apps ocultas |
+| 👆👆 Doble tap en header | - | Cambiar fondo de pantalla |
 
-## 📁 Project Structure - What Each File Does
+### Personalización del Fondo
+1. **Doble tap** en el área del header (hora/fecha)
+2. **Selecciona "Galería"** para elegir una imagen
+3. **O "Predeterminado"** para volver al fondo original
 
-Here's what you need to know about the project files:
+## 🏗️ Estructura del Proyecto
 
-### 🎨 App Resources (Edit These)
-
-**`app/src/main/res/values/strings.xml`**
-- Contains all text strings for your app
-- **Change**: App name, button texts, messages
-
-**`app/src/main/res/values/colors.xml`**
-- Defines your app's color scheme
-- **Change**: Primary color, background colors, text colors
-
-**`app/src/main/res/layout/activity_main.xml`**
-- Your app's user interface layout
-- **Change**: Add buttons, text views, images
-
-**`app/src/main/java/com/example/helloworld/MainActivity.kt`**
-- Your app's main logic
-- **Change**: Add functionality, handle button clicks
-
-### 🖼️ App Icons (Replace These)
-
-**Icon files to replace in `mipmap-*` folders:**
-- `mipmap-hdpi/ic_launcher.png` (72x72 pixels)
-- `mipmap-mdpi/ic_launcher.png` (48x48 pixels)
-- `mipmap-xhdpi/ic_launcher.png` (96x96 pixels)
-- `mipmap-xxhdpi/ic_launcher.png` (144x144 pixels)
-- `mipmap-xxxhdpi/ic_launcher.png` (192x192 pixels)
-
-**Replace all these PNG files** with your own app icon at the correct sizes.
-
-### ⚙️ Configuration Files (Usually Don't Edit)
-
-**`app/build.gradle`** - App dependencies and build settings
-**`build.gradle`** - Project-wide Gradle configuration
-**`AndroidManifest.xml`** - App permissions and components
-**`.github/workflows/build.yml`** - GitHub Actions auto-build script
-
-### 🔐 Signing Scripts (For Advanced Use)
-
-**`bash/utils-generate-keystore`** - Helps create signing keys for Play Store
-**`bash/utils-compile-apk`** - Local compilation script
-
-## 🛠️ Quick Customization Guide
-
-### Change App Name
-Edit `app/src/main/res/values/strings.xml`:
-```xml
-<string name="app_name">My Awesome App</string>
+```
+app/src/main/
+├── java/com/stringmanolo/awl/
+│   └── MainActivity.kt              # Actividad principal
+├── res/
+│   ├── layout/
+│   │   └── activity_main.xml        # Layout del WebView
+│   ├── xml/
+│   │   └── file_paths.xml           # Configuración FileProvider
+│   └── values/
+│       └── strings.xml              # Recursos de texto
+├── assets/
+│   ├── launcher.html               # Interfaz web principal
+│   ├── launcher.css                # Estilos y temas
+│   └── launcher.js                 # Lógica y funcionalidades
+└── AndroidManifest.xml             # Configuración y permisos
 ```
 
-### Change Colors
-Edit `app/src/main/res/values/colors.xml`:
-```xml
-<color name="colorPrimary">#FF3F51B5</color>
+## 🎨 Personalización
+
+### Modificar la Interfaz
+Edita los archivos en `assets/` para personalizar completamente el launcher:
+
+**`launcher.css`** - Apariencia visual:
+```css
+:root {
+    --primary-bg: rgba(15, 20, 30, 0.85);
+    --accent-color: #00d4ff;
+    /* Modifica estos valores para cambiar colores */
+}
 ```
 
-### Change Layout
-Edit `app/src/main/res/layout/activity_main.xml` to add buttons, text, or images.
+**`launcher.html`** - Estructura:
+```html
+<!-- Modifica la estructura HTML para cambiar el layout -->
+```
 
-### Add Functionality
-Edit `app/src/main/java/com/example/helloworld/MainActivity.kt` to make your app interactive.
+**`launcher.js`** - Comportamiento:
+```javascript
+// Ajusta los tiempos de los gestos
+const GESTURE_TIMING = {
+    TAP: 500,
+    DRAG_START: 1000,
+    // ... etc
+};
+```
 
-## 🌟 Why This Template?
+### Agregar Nuevas Funcionalidades
+1. **Extiende `MainActivity.kt`** para nuevas funciones nativas
+2. **Agrega métodos** en `WebAppInterface`
+3. **Llama desde JavaScript** usando `Android.nuevaFuncion()`
 
-- ✅ **Zero installation** - code in browser, get APK
-- ✅ **Instant setup** - 2 minutes from template to APK
-- ✅ **Clean structure** - easy to understand and expand
-- ✅ **Auto-compilation** - APK built on every code change
+## 🔧 Troubleshooting
 
+### Problemas Comunes
+
+**Problemas de rendimiento:**
+- Reduce la calidad de las imágenes de fondo
+- Simplifica animaciones CSS complejas
+
+## 📋 Permisos
+
+| Permiso | Propósito |
+|---------|-----------|
+| `INTERNET` | Cargar recursos web externos (no necesario) |
+| `QUERY_ALL_PACKAGES` | Listar aplicaciones instaladas |
+| `READ_EXTERNAL_STORAGE` | Acceder a imágenes para fondo |
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 🐛 Reportar Issues
+
+Si encuentras algún problema, por favor:
+
+1. Revisa los issues existentes
+2. Crea un nuevo issue con:
+   - Descripción detallada
+   - Pasos para reproducir
+   - Capturas de pantalla (si aplica)
+   - Información del dispositivo/Android version
+
+## 🌟 Características Futuras
+
+- [ ] Widgets Web y Nativos (inyección desde localStorage)
+- [ ] Diferentes temas predefinidos
+- [ ] Soporte para icon packs
+- [ ] Cambio entre modo cuadrícula y modo lista
+- [ ] Ajustes para editar apariencia
 ---
 
-**Ready to start? Click "Use this template" above!** 🚀
+**Desarrollado con Kotlin y Web Technologies**
 
-### Need Signed APK for Play Store?
-Run the signing script when you're ready to publish:
-```bash
-cd ./bash
-./utils-generate-keystore
-```
-Then create a GitHub release to get your signed APK.
+¿Preguntas o sugerencias? ¡Abre un issue o contribuye al proyecto!
