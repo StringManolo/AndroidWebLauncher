@@ -31,6 +31,7 @@ body {
     overflow-scrolling: touch;
 }
 
+/* ========== VISTA VERTICAL (MOBILE) ========== */
 /* Header Moderno */
 .header {
     background: var(--primary-bg);
@@ -193,77 +194,6 @@ body {
     color: var(--text-primary);
 }
 
-/* Estados de Gestos */
-.app-item.press-1s {
-    border-color: var(--warning-color);
-    background: rgba(255, 170, 0, 0.1);
-    animation: pulse-warning 1s infinite alternate;
-}
-
-.app-item.press-2s {
-    border-color: var(--success-color);
-    background: rgba(0, 255, 136, 0.1);
-    animation: pulse-success 1s infinite alternate;
-}
-
-.app-item.press-4s {
-    border-color: var(--danger-color);
-    background: rgba(255, 68, 68, 0.1);
-    animation: pulse-danger 0.8s infinite alternate;
-}
-
-.app-item.press-6s {
-    border-color: var(--danger-color);
-    background: rgba(255, 68, 68, 0.2);
-    animation: pulse-danger-fast 0.5s infinite alternate;
-}
-
-@keyframes pulse-warning {
-    from { 
-        border-color: var(--warning-color);
-        box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
-    }
-    to { 
-        border-color: #ffcc00;
-        box-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
-    }
-}
-
-@keyframes pulse-success {
-    from { 
-        border-color: var(--success-color);
-        box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-    }
-    to { 
-        border-color: #00ffaa;
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
-    }
-}
-
-@keyframes pulse-danger {
-    from { 
-        border-color: var(--danger-color);
-        box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
-    }
-    to { 
-        border-color: var(--danger-light);
-        box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
-    }
-}
-
-@keyframes pulse-danger-fast {
-    from { 
-        border-color: var(--danger-color);
-        background: rgba(255, 68, 68, 0.2);
-        box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
-    }
-    to { 
-        border-color: var(--danger-light);
-        background: rgba(255, 68, 68, 0.3);
-        box-shadow: 0 0 25px rgba(255, 68, 68, 0.7);
-    }
-}
-
 /* Dock Mejorado */
 .dock-container {
     position: fixed;
@@ -307,6 +237,196 @@ body {
 .dock-app:hover {
     transform: scale(1.15);
     box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
+}
+
+/* ========== VISTA HORIZONTAL (DESKTOP HD) ========== */
+@media (orientation: landscape) and (min-height: 480px) {
+    body {
+        padding: 15px;
+        padding-bottom: 100px;
+    }
+
+    /* Header más compacto */
+    .header {
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        border-radius: 16px;
+    }
+
+    .time {
+        font-size: 2.2em;
+        margin-bottom: 4px;
+    }
+
+    .date {
+        font-size: 0.9em;
+    }
+
+    /* Search más compacto */
+    .search-container {
+        margin-bottom: 15px;
+    }
+
+    .search-input {
+        padding: 12px 20px;
+        padding-left: 45px;
+        font-size: 14px;
+        border-radius: 12px;
+    }
+
+    .search-icon {
+        left: 15px;
+        font-size: 1em;
+    }
+
+    /* Apps Container más alto */
+    .apps-container {
+        height: 65vh;
+    }
+
+    /* Grid más denso - más columnas, iconos más pequeños */
+    .apps-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 12px;
+        padding: 6px;
+    }
+
+    .app-item {
+        padding: 12px 8px;
+        border-radius: 14px;
+    }
+
+    .app-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+
+    .app-name {
+        font-size: 11px;
+        max-width: 64px;
+    }
+
+    /* Dock más compacto */
+    .dock-container {
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .dock-scroll {
+        gap: 12px;
+    }
+
+    .dock-app {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+    }
+
+    /* Estadísticas más pequeñas */
+    .app-stats {
+        margin-top: 12px;
+        font-size: 11px;
+    }
+}
+
+/* ========== VISTA HORIZONTAL EN PANTALLAS GRANDES ========== */
+@media (orientation: landscape) and (min-width: 1024px) {
+    body {
+        padding: 20px 10%;
+        padding-bottom: 90px;
+    }
+
+    .header {
+        padding: 12px 20px;
+        margin-bottom: 12px;
+    }
+
+    .time {
+        font-size: 2em;
+    }
+
+    .date {
+        font-size: 0.85em;
+    }
+
+    .search-container {
+        margin-bottom: 12px;
+    }
+
+    .apps-container {
+        height: 70vh;
+    }
+
+    .apps-grid {
+        grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+        gap: 10px;
+    }
+
+    .app-item {
+        padding: 10px 6px;
+        border-radius: 12px;
+    }
+
+    .app-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+    }
+
+    .app-name {
+        font-size: 10px;
+        max-width: 60px;
+    }
+
+    .dock-container {
+        bottom: 12px;
+        left: 10%;
+        right: 10%;
+        padding: 10px;
+    }
+
+    .dock-app {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* ========== VISTA HORIZONTAL EN PANTALLAS MUY GRANDES ========== */
+@media (orientation: landscape) and (min-width: 1366px) {
+    body {
+        padding: 15px 15%;
+        padding-bottom: 80px;
+    }
+
+    .apps-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
+    }
+
+    .app-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .app-name {
+        font-size: 9px;
+        max-width: 55px;
+    }
+
+    .dock-container {
+        left: 15%;
+        right: 15%;
+    }
+
+    .dock-app {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 /* Indicadores de Gestos */
@@ -437,6 +557,77 @@ body {
 
 .modal-btn:active {
     transform: translateY(0);
+}
+
+/* Estados de Gestos */
+.app-item.press-1s {
+    border-color: var(--warning-color);
+    background: rgba(255, 170, 0, 0.1);
+    animation: pulse-warning 1s infinite alternate;
+}
+
+.app-item.press-2s {
+    border-color: var(--success-color);
+    background: rgba(0, 255, 136, 0.1);
+    animation: pulse-success 1s infinite alternate;
+}
+
+.app-item.press-4s {
+    border-color: var(--danger-color);
+    background: rgba(255, 68, 68, 0.1);
+    animation: pulse-danger 0.8s infinite alternate;
+}
+
+.app-item.press-6s {
+    border-color: var(--danger-color);
+    background: rgba(255, 68, 68, 0.2);
+    animation: pulse-danger-fast 0.5s infinite alternate;
+}
+
+@keyframes pulse-warning {
+    from { 
+        border-color: var(--warning-color);
+        box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+    }
+    to { 
+        border-color: #ffcc00;
+        box-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
+    }
+}
+
+@keyframes pulse-success {
+    from { 
+        border-color: var(--success-color);
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    to { 
+        border-color: #00ffaa;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+    }
+}
+
+@keyframes pulse-danger {
+    from { 
+        border-color: var(--danger-color);
+        box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+    }
+    to { 
+        border-color: var(--danger-light);
+        box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+    }
+}
+
+@keyframes pulse-danger-fast {
+    from { 
+        border-color: var(--danger-color);
+        background: rgba(255, 68, 68, 0.2);
+        box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+    }
+    to { 
+        border-color: var(--danger-light);
+        background: rgba(255, 68, 68, 0.3);
+        box-shadow: 0 0 25px rgba(255, 68, 68, 0.7);
+    }
 }
 
 /* Contador de Apps */
@@ -654,7 +845,7 @@ body.drag-scrolling {
     opacity: 1;
 }
 
-/* Mejoras de Responsividad */
+/* Mejoras de Responsividad para móviles pequeños */
 @media (max-width: 360px) {
     .apps-grid {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -675,37 +866,57 @@ body.drag-scrolling {
     }
 }
 
-@media (min-width: 768px) {
+/* ========== AJUSTES ESPECÍFICOS PARA HORIZONTAL EN MÓVILES PEQUEÑOS ========== */
+@media (orientation: landscape) and (max-height: 480px) {
+    body {
+        padding: 10px;
+        padding-bottom: 70px;
+    }
+
+    .header {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+    }
+
+    .time {
+        font-size: 1.8em;
+    }
+
+    .date {
+        font-size: 0.8em;
+    }
+
+    .apps-container {
+        height: 60vh;
+    }
+
     .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
     }
-    
+
+    .app-item {
+        padding: 8px 4px;
+    }
+
     .app-icon {
-        width: 64px;
-        height: 64px;
+        width: 40px;
+        height: 40px;
     }
-    
+
+    .app-name {
+        font-size: 9px;
+        max-width: 55px;
+    }
+
+    .dock-container {
+        bottom: 10px;
+        padding: 8px;
+    }
+
     .dock-app {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-/* Estados de carga */
-.loading-skeleton {
-    animation: skeleton-loading 1.5s infinite ease-in-out;
-}
-
-@keyframes skeleton-loading {
-    0% {
-        background: var(--secondary-bg);
-    }
-    50% {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    100% {
-        background: var(--secondary-bg);
+        width: 40px;
+        height: 40px;
     }
 }
 
