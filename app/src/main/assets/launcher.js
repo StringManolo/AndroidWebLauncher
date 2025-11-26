@@ -14,7 +14,8 @@ let currentGesture = {
     timer: null,
     isDragging: false,
     hasMoved: false,
-    dragElement: null
+    dragElement: null,
+    dropTarget: null
 };
 
 // Variables para drag and drop
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     updateTime();
     updateAppStats();
+    loadSavedWallpaper();
     
     // Prevenir comportamientos no deseados
     document.addEventListener('touchmove', function(e) {
@@ -54,6 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
         }
     }, { passive: false });
+
+    // Permitir scroll normal
+    document.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.apps-container') || e.target.closest('.dock-scroll')) {
+            // Permitir scroll en estas áreas
+        }
+    }, { passive: true });
 });
 
 function initializeEventListeners() {
@@ -216,7 +225,8 @@ function handleGestureStart(appElement, app, event) {
         timer: null,
         isDragging: false,
         hasMoved: false,
-        dragElement: null
+        dragElement: null,
+        dropTarget: null
     };
 
     // Iniciar temporizador para feedback visual
@@ -336,7 +346,8 @@ function handleGestureEnd(event) {
         timer: null,
         isDragging: false,
         hasMoved: false,
-        dragElement: null
+        dragElement: null,
+        dropTarget: null
     };
 
     if (!isTouch) {
@@ -364,7 +375,8 @@ function handleGestureCancel() {
             timer: null,
             isDragging: false,
             hasMoved: false,
-            dragElement: null
+            dragElement: null,
+            dropTarget: null
         };
     }
 }
@@ -383,6 +395,7 @@ function startDrag(appElement, clientX, clientY) {
     dragElement.style.transform = 'rotate(5deg) scale(1.1)';
     dragElement.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
     dragElement.classList.add('dragging');
+    dragElement.classList.add('drag-ghost');
     
     document.body.appendChild(dragElement);
     currentGesture.dragElement = dragElement;
@@ -433,13 +446,11 @@ function checkReordering(clientX, clientY) {
     
     // Resaltar el elemento más cercano
     appElements.forEach(element => {
-        element.style.transform = '';
-        element.style.background = '';
+        element.classList.remove('drop-target');
     });
     
     if (closestElement && closestDistance < 100) { // Umbral de 100px
-        closestElement.style.transform = 'scale(1.05)';
-        closestElement.style.background = 'rgba(0, 212, 255, 0.2)';
+        closestElement.classList.add('drop-target');
         currentGesture.dropTarget = closestElement;
     } else {
         currentGesture.dropTarget = null;
@@ -466,14 +477,12 @@ function endDrag() {
         reorderApps(sourcePackage, targetPackage);
         
         // Restaurar estilo del objetivo
-        currentGesture.dropTarget.style.transform = '';
-        currentGesture.dropTarget.style.background = '';
+        currentGesture.dropTarget.classList.remove('drop-target');
     }
     
     // Restaurar todos los elementos
     document.querySelectorAll('.app-item').forEach(element => {
-        element.style.transform = '';
-        element.style.background = '';
+        element.classList.remove('drop-target');
     });
     
     currentGesture.isDragging = false;
@@ -517,10 +526,17 @@ function checkAutoScroll(clientY) {
     // Verificar si necesita scroll hacia arriba
     if (clientY < containerRect.top + scrollThreshold) {
         startAutoScroll(-1);
+        document.getElementById('autoScrollTop').classList.add('active');
+    } else {
+        document.getElementById('autoScrollTop').classList.remove('active');
     }
+    
     // Verificar si necesita scroll hacia abajo
-    else if (clientY > containerRect.bottom - scrollThreshold) {
+    if (clientY > containerRect.bottom - scrollThreshold) {
         startAutoScroll(1);
+        document.getElementById('autoScrollBottom').classList.add('active');
+    } else {
+        document.getElementById('autoScrollBottom').classList.remove('active');
     }
 }
 
@@ -538,6 +554,8 @@ function stopAutoScroll() {
         clearInterval(dragScrollInterval);
         dragScrollInterval = null;
     }
+    document.getElementById('autoScrollTop').classList.remove('active');
+    document.getElementById('autoScrollBottom').classList.remove('active');
 }
 
 // ========== FUNCIÓN DE DESINSTALACIÓN CON CONFIRMACIÓN ==========
@@ -545,55 +563,17 @@ function stopAutoScroll() {
 function showUninstallConfirmation(packageName, appName) {
     // Crear modal de confirmación
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-    `;
-    
+    modal.className = 'uninstall-modal';
     modal.innerHTML = `
-        <div style="
-            background: var(--primary-bg);
-            backdrop-filter: blur(40px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 80%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        ">
-            <div style="font-size: 1.4em; margin-bottom: 10px; color: var(--danger-color);">⚠️</div>
-            <div style="font-size: 1.2em; margin-bottom: 10px; font-weight: 600;">Desinstalar aplicación</div>
-            <div style="margin-bottom: 20px; color: var(--text-secondary);">
-                ¿Estás seguro de que quieres desinstalar "<strong>${appName}</strong>"?
+        <div class="uninstall-content">
+            <div class="uninstall-icon">⚠️</div>
+            <div class="uninstall-title">Desinstalar aplicación</div>
+            <div class="uninstall-message">
+                ¿Estás seguro de que quieres desinstalar "<span class="uninstall-app-name">${appName}</span>"?
             </div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="confirmUninstall" style="
-                    padding: 12px 24px;
-                    background: var(--danger-color);
-                    color: white;
-                    border: none;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    font-weight: 500;
-                ">Desinstalar</button>
-                <button id="cancelUninstall" style="
-                    padding: 12px 24px;
-                    background: var(--secondary-bg);
-                    color: var(--text-primary);
-                    border: none;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    font-weight: 500;
-                ">Cancelar</button>
+            <div class="uninstall-buttons">
+                <button class="uninstall-btn confirm">Desinstalar</button>
+                <button class="uninstall-btn cancel">Cancelar</button>
             </div>
         </div>
     `;
@@ -601,14 +581,14 @@ function showUninstallConfirmation(packageName, appName) {
     document.body.appendChild(modal);
     
     // Event listeners para los botones
-    document.getElementById('confirmUninstall').addEventListener('click', function() {
+    modal.querySelector('.uninstall-btn.confirm').addEventListener('click', function() {
         if (typeof Android !== 'undefined' && Android.uninstallApp) {
             Android.uninstallApp(packageName);
         }
         modal.remove();
     });
     
-    document.getElementById('cancelUninstall').addEventListener('click', function() {
+    modal.querySelector('.uninstall-btn.cancel').addEventListener('click', function() {
         modal.remove();
     });
     
@@ -620,7 +600,123 @@ function showUninstallConfirmation(packageName, appName) {
     });
 }
 
-// ========== FUNCIONES EXISTENTES (actualizadas) ==========
+// ========== FUNCIONES PARA FONDO DE PANTALLA ==========
+
+function openWallpaperPicker() {
+    document.getElementById('wallpaperModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('wallpaperModal').style.display = 'none';
+}
+
+function selectWallpaperFromGallery() {
+    if (typeof Android !== 'undefined' && Android.openGallery) {
+        Android.openGallery();
+    } else {
+        // Fallback: usar input file nativo
+        document.getElementById('wallpaperInput').click();
+    }
+    closeModal();
+}
+
+function useDefaultWallpaper() {
+    document.body.style.backgroundImage = '';
+    document.body.style.background = 'linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%)';
+    localStorage.removeItem('customWallpaper');
+    closeModal();
+    if (typeof Android !== 'undefined' && Android.showToast) {
+        Android.showToast("🎨 Fondo restaurado");
+    }
+}
+
+function handleWallpaperSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleImageFile(file);
+    }
+}
+
+function handleImageFile(file) {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+        if (typeof Android !== 'undefined' && Android.showToast) {
+            Android.showToast("❌ Solo se permiten imágenes");
+        }
+        return;
+    }
+
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        if (typeof Android !== 'undefined' && Android.showToast) {
+            Android.showToast("❌ Imagen demasiado grande (máx. 10MB)");
+        }
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        applyWallpaper(e.target.result);
+    };
+    reader.onerror = function() {
+        if (typeof Android !== 'undefined' && Android.showToast) {
+            Android.showToast("❌ Error al cargar la imagen");
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function applyWallpaper(imageData) {
+    document.body.style.backgroundImage = `url(${imageData})`;
+    localStorage.setItem('customWallpaper', imageData);
+    if (typeof Android !== 'undefined' && Android.showToast) {
+        Android.showToast("🎨 Fondo actualizado");
+    }
+}
+
+// Función para manejar la imagen seleccionada desde Android
+window.onImageSelected = function(imageUri) {
+    // Crear una imagen para cargar la URI
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        // Crear un canvas para convertir la imagen a base64
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        // Convertir a base64
+        const base64Data = canvas.toDataURL('image/jpeg', 0.8);
+        applyWallpaper(base64Data);
+    };
+    img.onerror = function() {
+        if (typeof Android !== 'undefined' && Android.showToast) {
+            Android.showToast("❌ Error al cargar la imagen");
+        }
+    };
+    img.src = imageUri;
+};
+
+function loadSavedWallpaper() {
+    const savedWallpaper = localStorage.getItem('customWallpaper');
+    if (savedWallpaper) {
+        // Verificar si la imagen todavía es válida
+        const img = new Image();
+        img.onload = function() {
+            document.body.style.backgroundImage = `url(${savedWallpaper})`;
+        };
+        img.onerror = function() {
+            // Si la imagen no se puede cargar, usar fondo predeterminado
+            localStorage.removeItem('customWallpaper');
+            document.body.style.background = 'linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%)';
+        };
+        img.src = savedWallpaper;
+    }
+}
+
+// ========== FUNCIONES AUXILIARES ==========
 
 function showGestureFeedback(text, icon) {
     const indicator = document.getElementById('gestureIndicator');
@@ -766,68 +862,63 @@ function saveAppPositions() {
     localStorage.setItem('appPositions', JSON.stringify(appPositions));
 }
 
-// Funciones para fondo de pantalla
-function openWallpaperPicker() {
-    document.getElementById('wallpaperModal').style.display = 'flex';
-}
+// ========== FUNCIONES DE UTILIDAD ==========
 
-function closeModal() {
-    document.getElementById('wallpaperModal').style.display = 'none';
-}
-
-function selectWallpaperFromGallery() {
-    document.getElementById('wallpaperInput').click();
-    closeModal();
-}
-
-function useDefaultWallpaper() {
-    document.body.style.backgroundImage = '';
-    localStorage.removeItem('customWallpaper');
-    closeModal();
-    if (typeof Android !== 'undefined' && Android.showToast) {
-        Android.showToast("🎨 Fondo restaurado");
+// Prevenir acciones por defecto en elementos arrastrables
+document.addEventListener('dragstart', function(e) {
+    if (e.target.classList.contains('app-item') || e.target.classList.contains('dock-app')) {
+        e.preventDefault();
     }
+});
+
+// Mejorar el rendimiento del scroll
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
 }
 
-function handleWallpaperSelect(e) {
-    const file = e.target.files[0];
-    if (file) {
-        // Validar tipo de archivo
-        if (!file.type.startsWith('image/')) {
-            if (typeof Android !== 'undefined' && Android.showToast) {
-                Android.showToast("❌ Solo se permiten imágenes");
-            }
-            return;
-        }
+// Manejar cambios de orientación
+window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+        renderApps();
+    }, 300);
+});
 
-        // Validar tamaño (máximo 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            if (typeof Android !== 'undefined' && Android.showToast) {
-                Android.showToast("❌ Imagen demasiado grande (máx. 10MB)");
-            }
-            return;
-        }
+// Manejar cambios de tamaño de ventana
+window.addEventListener('resize', function() {
+    clearTimeout(window.resizeTimer);
+    window.resizeTimer = setTimeout(() => {
+        renderApps();
+    }, 250);
+});
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imageUrl = e.target.result;
-            document.body.style.backgroundImage = `url(${imageUrl})`;
-            localStorage.setItem('customWallpaper', imageUrl);
-            if (typeof Android !== 'undefined' && Android.showToast) {
-                Android.showToast("🎨 Fondo actualizado");
+// Exportar funciones globales para debugging
+window.debugLauncher = {
+    getAllApps: () => allApps,
+    getFavoriteApps: () => favoriteApps,
+    getHiddenApps: () => hiddenApps,
+    getAppPositions: () => appPositions,
+    clearData: () => {
+        localStorage.clear();
+        favoriteApps = [];
+        hiddenApps = [];
+        appPositions = {};
+        renderApps();
+    },
+    simulateGesture: (packageName, gestureType) => {
+        const appElement = document.querySelector(`[data-package="${packageName}"]`);
+        if (appElement) {
+            switch(gestureType) {
+                case 'favorite':
+                    toggleFavorite(packageName);
+                    break;
+                case 'hide':
+                    toggleAppVisibility(packageName);
+                    break;
+                case 'uninstall':
+                    const appName = appElement.querySelector('.app-name').textContent;
+                    showUninstallConfirmation(packageName, appName);
+                    break;
             }
-        };
-        reader.onerror = function() {
-            if (typeof Android !== 'undefined' && Android.showToast) {
-                Android.showToast("❌ Error al cargar la imagen");
-            }
-        };
-        reader.readAsDataURL(file);
+        }
     }
-}
-
-// Cargar fondo personalizado al iniciar
-const savedWallpaper = localStorage.getItem('customWallpaper');
-if (savedWallpaper) {
-    document.body.style.backgroundImage = `url(${savedWallpaper})`;
-}
+};

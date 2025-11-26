@@ -8,19 +8,44 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var cameraPhotoPath: String? = null
+
+    // Registro para el resultado de la actividad de selección de archivos
+    private val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let { uri ->
+                filePathCallback?.onReceiveValue(arrayOf(uri))
+            } ?: run {
+                filePathCallback?.onReceiveValue(null)
+            }
+        } else {
+            filePathCallback?.onReceiveValue(null)
+        }
+        filePathCallback = null
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         webSettings.javaScriptEnabled = true
         webSettings.domStorageEnabled = true
         webSettings.allowFileAccess = true
+        webSettings.allowContentAccess = true
         
         // Configuraciones para mejorar rendimiento
         webSettings.loadWithOverviewMode = true
@@ -56,7 +82,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Configurar para mejor rendimiento de scroll
-        webSettings.allowContentAccess = true
         webSettings.allowFileAccessFromFileURLs = true
         webSettings.allowUniversalAccessFromFileURLs = true
 
@@ -68,8 +93,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Configurar Chrome Client para selección de archivos
-        webView.webChromeClient = WebChromeClient()
-        
+        webView.webChromeClient = object : WebChromeClient() {
+            // Para Android 5.0+
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                this@MainActivity.filePathCallback?.onReceiveValue(null)
+                this@MainActivity.filePathCallback = filePathCallback
+
+                val intent = fileChooserParams?.createIntent()
+                try {
+                    filePickerResult.launch(intent)
+                } catch (e: Exception) {
+                    filePathCallback?.onReceiveValue(null)
+                    this@MainActivity.filePathCallback = null
+                    return false
+                }
+                return true
+            }
+        }
+
         webView.addJavascriptInterface(WebAppInterface(), "Android")
         
         // Cargar la página web
@@ -164,6 +209,29 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             } catch (e: Exception) {
                 Toast.makeText(this@MainActivity, "No se puede desinstalar la app", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun openGallery() {
+            try {
+                val intent = Intent(Intent.ACTION_GET_CONTENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.type = "image/*"
+                startActivityForResult(intent, 100)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "No se puede abrir la galería", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            data?.data?.let { uri ->
+                // Pasar la URI de la imagen seleccionada al WebView
+                val imageUri = uri.toString()
+                webView.evaluateJavascript("window.onImageSelected('$imageUri')", null)
             }
         }
     }
