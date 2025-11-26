@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Launcher</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+        
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .app-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .app-item:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .debug-info {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Simple Launcher</h1>
+        <p>Versión de debug</p>
+    </div>
+
+    <div class="app-list" id="appList">
+        <div class="app-item" onclick="Android.showToast('Lista de apps cargándose...')">
+            Cargando aplicaciones...
+        </div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Debug Controls:</h3>
+        <button onclick="testToast()">Test Toast</button>
+        <button onclick="testAppLaunch()">Test App Launch</button>
+        <button onclick="checkAndroidInterface()">Check Android Interface</button>
+    </div>
+
+    <script>
+        // Variable global para almacenar apps
+        let apps = [];
+
+        // Función para cargar apps básicas
+        window.loadBasicApps = function(appsList) {
+            console.log('Apps recibidas:', appsList);
+            apps = appsList;
+            renderApps();
+        };
+
+        // Renderizar apps en la lista
+        function renderApps() {
+            const appList = document.getElementById('appList');
+            appList.innerHTML = '';
+
+            apps.forEach(app => {
+                const appElement = document.createElement('div');
+                appElement.className = 'app-item';
+                appElement.innerHTML = `
+                    <strong>${app.name}</strong><br>
+                    <small>${app.packageName}</small>
+                `;
+                appElement.onclick = () => launchApp(app.packageName);
+                appList.appendChild(appElement);
+            });
+
+            if (apps.length === 0) {
+                appList.innerHTML = '<div class="app-item">No se encontraron apps</div>';
+            }
+        }
+
+        // Lanzar aplicación
+        function launchApp(packageName) {
+            if (typeof Android !== 'undefined' && Android.launchApp) {
+                Android.launchApp(packageName);
+            } else {
+                alert('Error: Android interface no disponible');
+            }
+        }
+
+        // Funciones de debug
+        function testToast() {
+            if (typeof Android !== 'undefined' && Android.showToast) {
+                Android.showToast('Toast desde JavaScript funcionando!');
+            } else {
+                alert('Android.showToast no disponible');
+            }
+        }
+
+        function testAppLaunch() {
+            // Intentar abrir ajustes
+            if (typeof Android !== 'undefined' && Android.launchApp) {
+                Android.launchApp('com.android.settings');
+            } else {
+                alert('Android.launchApp no disponible');
+            }
+        }
+
+        function checkAndroidInterface() {
+            if (typeof Android === 'undefined') {
+                alert('Android interface: NO DISPONIBLE');
+            } else {
+                let methods = '';
+                for (let method in Android) {
+                    if (typeof Android[method] === 'function') {
+                        methods += method + ', ';
+                    }
+                }
+                alert('Android interface: DISPONIBLE\nMétodos: ' + methods);
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM cargado');
+            
+            // Verificar si Android interface está disponible después de un delay
+            setTimeout(() => {
+                if (typeof Android !== 'undefined') {
+                    document.getElementById('appList').innerHTML = 
+                        '<div class="app-item">Android interface disponible ✓</div>';
+                } else {
+                    document.getElementById('appList').innerHTML = 
+                        '<div class="app-item" style="background:red;color:white;">ERROR: Android interface NO disponible</div>';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
