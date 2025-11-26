@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Configurar Chrome Client
+        // Configurar Chrome Client para selección de archivos
         webView.webChromeClient = WebChromeClient()
         
         webView.addJavascriptInterface(WebAppInterface(), "Android")
@@ -129,7 +130,8 @@ class MainActivity : AppCompatActivity() {
             
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
+            val byteArray = stream.toByteArray()
+            Base64.encodeToString(byteArray, Base64.DEFAULT)
         } catch (e: Exception) {
             ""
         }
@@ -151,6 +153,18 @@ class MainActivity : AppCompatActivity() {
         @android.webkit.JavascriptInterface
         fun showToast(message: String) {
             Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+        }
+
+        @android.webkit.JavascriptInterface
+        fun uninstallApp(packageName: String) {
+            try {
+                val intent = Intent(Intent.ACTION_DELETE)
+                intent.data = Uri.parse("package:$packageName")
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "No se puede desinstalar la app", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
