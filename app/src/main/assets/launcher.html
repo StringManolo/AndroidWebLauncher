@@ -5,984 +5,926 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Android Web Launcher</title>
     <link rel="stylesheet" href="launcher.css">
-    <style>* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-    }
-
-    :root {
-      --primary-bg: rgba(15, 20, 30, 0.85);
-      --secondary-bg: rgba(255, 255, 255, 0.12);
-      --accent-color: #00d4ff;
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.15);
-      --success-color: #00ff88;
-      --warning-color: #ffaa00;
-      --danger-color: #ff4444;
-      --danger-light: #ff8888;
-    }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%);
-      min-height: 100vh;
-      color: var(--text-primary);
-      padding: 20px;
-      padding-bottom: 140px;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      -webkit-overflow-scrolling: touch;
-      overflow-scrolling: touch;
-    }
-
-    /* ========== VISTA VERTICAL (MOBILE) ========== */
-    /* Header Moderno */
-    .header {
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      border-radius: 24px;
-      border: 1px solid var(--glass-border);
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .header:active {
-      transform: scale(0.98);
-    }
-
-    .time-display {
-      text-align: center;
-    }
-
-    .time {
-      font-size: 3.5em;
-      font-weight: 300;
-      background: linear-gradient(135deg, var(--accent-color), #0099ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .date {
-      font-size: 1.1em;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    /* Search Bar */
-    .search-container {
-      position: relative;
-      margin-bottom: 24px;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 18px 24px;
-      padding-left: 52px;
-      border: none;
-      border-radius: 16px;
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      border: 1px solid var(--glass-border);
-      color: var(--text-primary);
-      font-size: 16px;
-      outline: none;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      border-color: var(--accent-color);
-      box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-    }
-
-    .search-input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-secondary);
-      font-size: 1.2em;
-    }
-
-    /* Apps Container con Scroll Optimizado */
-    .apps-container {
-      height: 58vh;
-      overflow-y: auto;
-      transform: translateZ(0);
-      -webkit-overflow-scrolling: touch;
-      will-change: transform;
-      scrollbar-width: none;
-      padding: 4px;
-    }
-
-    .apps-container::-webkit-scrollbar {
-      display: none;
-    }
-
-    .apps-container.no-scroll {
-      overflow: hidden;
-    }
-
-    /* Apps Grid */
-    .apps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-      gap: 16px;
-      padding: 8px;
-    }
-
-    .app-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 12px;
-      border-radius: 20px;
-      background: var(--primary-bg);
-      backdrop-filter: blur(30px);
-      border: 1px solid var(--glass-border);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      user-select: none;
-      transform: translateZ(0);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .app-item:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent-color);
-      box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
-    }
-
-    .app-item.dragging {
-      opacity: 0.8;
-      transform: rotate(8deg) scale(1.05);
-      border-color: var(--accent-color);
-      z-index: 1000;
-      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
-    }
-
-    .app-item.hidden {
-      display: none;
-    }
-
-    .app-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-      margin-bottom: 12px;
-      object-fit: cover;
-      background: linear-gradient(135deg, var(--secondary-bg), transparent);
-      backface-visibility: hidden;
-      transform: translateZ(0);
-    }
-
-    .app-name {
-      font-size: 12px;
-      text-align: center;
-      font-weight: 500;
-      max-width: 76px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text-primary);
-    }
-
-    /* Dock Mejorado */
-    .dock-container {
-      position: fixed;
-      bottom: 24px;
-      left: 20px;
-      right: 20px;
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      border-radius: 24px;
-      border: 1px solid var(--glass-border);
-      padding: 16px;
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
-    }
-
-    .dock-scroll {
-      display: flex;
-      gap: 16px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      transform: translateZ(0);
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .dock-scroll::-webkit-scrollbar {
-      display: none;
-    }
-
-    .dock-app {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
-      object-fit: cover;
-      background: linear-gradient(135deg, var(--secondary-bg), transparent);
-    }
-
-    .dock-app:hover {
-      transform: scale(1.15);
-      box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
-    }
-
-    /* ========== VISTA HORIZONTAL (DESKTOP HD) ========== */
-    @media (orientation: landscape) and (min-height: 480px) {
-      body {
-        padding: 15px;
-        padding-bottom: 100px;
+    <style>
+      .apps-container, .dock-container {
+        contain: content; 
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
-      /* Header más compacto */
+      :root {
+        --primary-bg: rgba(15, 20, 30, 0.85);
+        --secondary-bg: rgba(255, 255, 255, 0.12);
+        --accent-color: #00d4ff;
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --success-color: #00ff88;
+        --warning-color: #ffaa00;
+        --danger-color: #ff4444;
+        --danger-light: #ff8888;
+      }
+
+      body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+        padding: 20px;
+        padding-bottom: 140px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
+      }
+
       .header {
-        padding: 15px 20px;
-        margin-bottom: 15px;
-        border-radius: 16px;
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        will-change: transform;
+      }
+
+      .header:active {
+        transform: scale(0.98);
+      }
+
+      .time-display {
+        text-align: center;
       }
 
       .time {
-        font-size: 2.2em;
-        margin-bottom: 4px;
+        font-size: 3.5em;
+        font-weight: 300;
+        background: linear-gradient(135deg, var(--accent-color), #0099ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+        font-variant-numeric: tabular-nums;
       }
 
       .date {
-        font-size: 0.9em;
+        font-size: 1.1em;
+        color: var(--text-secondary);
+        font-weight: 500;
       }
 
-      /* Search más compacto */
       .search-container {
-        margin-bottom: 15px;
+        position: relative;
+        margin-bottom: 24px;
       }
 
       .search-input {
-        padding: 12px 20px;
-        padding-left: 45px;
-        font-size: 14px;
-        border-radius: 12px;
+        width: 100%;
+        padding: 18px 24px;
+        padding-left: 52px;
+        border: none;
+        border-radius: 16px;
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        font-size: 16px;
+        outline: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease; 
+      }
+
+      .search-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+      }
+
+      .search-input::placeholder {
+        color: var(--text-secondary);
       }
 
       .search-icon {
-        left: 15px;
-        font-size: 1em;
-      }
-
-      /* Apps Container más alto */
-      .apps-container {
-        height: 65vh;
-      }
-
-      /* Grid más denso - más columnas, iconos más pequeños */
-      .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-        gap: 12px;
-        padding: 6px;
-      }
-
-      .app-item {
-        padding: 12px 8px;
-        border-radius: 14px;
-      }
-
-      .app-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        margin-bottom: 8px;
-      }
-
-      .app-name {
-        font-size: 11px;
-        max-width: 64px;
-      }
-
-      /* Dock más compacto */
-      .dock-container {
-        bottom: 15px;
-        left: 15px;
-        right: 15px;
-        padding: 12px;
-        border-radius: 16px;
-      }
-
-      .dock-scroll {
-        gap: 12px;
-      }
-
-      .dock-app {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-      }
-
-      /* Estadísticas más pequeñas */
-      .app-stats {
-        margin-top: 12px;
-        font-size: 11px;
-      }
-    }
-
-    /* ========== VISTA HORIZONTAL EN PANTALLAS GRANDES ========== */
-    @media (orientation: landscape) and (min-width: 1024px) {
-      body {
-        padding: 20px 10%;
-        padding-bottom: 90px;
-      }
-
-      .header {
-        padding: 12px 20px;
-        margin-bottom: 12px;
-      }
-
-      .time {
-        font-size: 2em;
-      }
-
-      .date {
-        font-size: 0.85em;
-      }
-
-      .search-container {
-        margin-bottom: 12px;
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1.2em;
       }
 
       .apps-container {
-        height: 70vh;
+        height: 58vh;
+        overflow-y: auto;
+        transform: translateZ(0); 
+        -webkit-overflow-scrolling: touch;
+        will-change: transform, scroll-position;
+        scrollbar-width: none;
+        padding: 4px;
+      }
+
+      .apps-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      .apps-container.no-scroll {
+        overflow: hidden;
       }
 
       .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-        gap: 10px;
-      }
-
-      .app-item {
-        padding: 10px 6px;
-        border-radius: 12px;
-      }
-
-      .app-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-      }
-
-      .app-name {
-        font-size: 10px;
-        max-width: 60px;
-      }
-
-      .dock-container {
-        bottom: 12px;
-        left: 10%;
-        right: 10%;
-        padding: 10px;
-      }
-
-      .dock-app {
-        width: 44px;
-        height: 44px;
-      }
-    }
-
-    /* ========== VISTA HORIZONTAL EN PANTALLAS MUY GRANDES ========== */
-    @media (orientation: landscape) and (min-width: 1366px) {
-      body {
-        padding: 15px 15%;
-        padding-bottom: 80px;
-      }
-
-      .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 8px;
-      }
-
-      .app-icon {
-        width: 40px;
-        height: 40px;
-      }
-
-      .app-name {
-        font-size: 9px;
-        max-width: 55px;
-      }
-
-      .dock-container {
-        left: 15%;
-        right: 15%;
-      }
-
-      .dock-app {
-        width: 40px;
-        height: 40px;
-      }
-    }
-
-    /* Indicadores de Gestos */
-    .gesture-indicator {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 20px 30px;
-      z-index: 10000;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      text-align: center;
-      display: none;
-      animation: gesture-popup 0.3s ease-out;
-    }
-
-    @keyframes gesture-popup {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
-
-    .gesture-icon {
-      font-size: 2em;
-      margin-bottom: 8px;
-    }
-
-    .gesture-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    /* Modal Moderno */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(20px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      animation: modal-fade-in 0.3s ease-out;
-    }
-
-    @keyframes modal-fade-in {
-      from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-      }
-      to {
-        opacity: 1;
-        backdrop-filter: blur(20px);
-      }
-    }
-
-    .modal-content {
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      padding: 30px;
-      border-radius: 24px;
-      border: 1px solid var(--glass-border);
-      max-width: 90%;
-      max-height: 80%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      animation: modal-slide-up 0.3s ease-out;
-    }
-
-    @keyframes modal-slide-up {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .modal-title {
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 1.4em;
-      font-weight: 600;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .modal-btn {
-      padding: 14px 24px;
-      border: none;
-      border-radius: 12px;
-      background: var(--secondary-bg);
-      color: var(--text-primary);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      min-width: 120px;
-    }
-
-    .modal-btn.primary {
-      background: linear-gradient(135deg, var(--accent-color), #0099ff);
-    }
-
-    .modal-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
-    }
-
-    .modal-btn:active {
-      transform: translateY(0);
-    }
-
-    /* Estados de Gestos */
-    .app-item.press-1s {
-      border-color: var(--warning-color);
-      background: rgba(255, 170, 0, 0.1);
-      animation: pulse-warning 1s infinite alternate;
-    }
-
-    .app-item.press-2s {
-      border-color: var(--success-color);
-      background: rgba(0, 255, 136, 0.1);
-      animation: pulse-success 1s infinite alternate;
-    }
-
-    .app-item.press-4s {
-      border-color: var(--danger-color);
-      background: rgba(255, 68, 68, 0.1);
-      animation: pulse-danger 0.8s infinite alternate;
-    }
-
-    .app-item.press-6s {
-      border-color: var(--danger-color);
-      background: rgba(255, 68, 68, 0.2);
-      animation: pulse-danger-fast 0.5s infinite alternate;
-    }
-
-    @keyframes pulse-warning {
-      from { 
-        border-color: var(--warning-color);
-        box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
-      }
-      to { 
-        border-color: #ffcc00;
-        box-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
-      }
-    }
-
-    @keyframes pulse-success {
-      from { 
-        border-color: var(--success-color);
-        box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-      }
-      to { 
-        border-color: #00ffaa;
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
-      }
-    }
-
-    @keyframes pulse-danger {
-      from { 
-        border-color: var(--danger-color);
-        box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
-      }
-      to { 
-        border-color: var(--danger-light);
-        box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
-      }
-    }
-
-    @keyframes pulse-danger-fast {
-      from { 
-        border-color: var(--danger-color);
-        background: rgba(255, 68, 68, 0.2);
-        box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
-      }
-      to { 
-        border-color: var(--danger-light);
-        background: rgba(255, 68, 68, 0.3);
-        box-shadow: 0 0 25px rgba(255, 68, 68, 0.7);
-      }
-    }
-
-    /* Contador de Apps */
-    .app-stats {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    /* Efectos de Fondo */
-    .background-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, 
-        rgba(15, 20, 30, 0.9) 0%, 
-        rgba(26, 43, 60, 0.8) 100%);
-      z-index: -1;
-    }
-
-    /* Elemento de Arrastre Personalizado */
-    .drag-ghost {
-      position: fixed !important;
-      z-index: 10000 !important;
-      pointer-events: none !important;
-      transform: rotate(5deg) scale(1.1);
-      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.4);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .drag-ghost.dragging {
-      animation: drag-float 2s infinite alternate;
-    }
-
-    @keyframes drag-float {
-      from {
-        transform: rotate(5deg) scale(1.1) translateY(0);
-      }
-      to {
-        transform: rotate(5deg) scale(1.1) translateY(-5px);
-      }
-    }
-
-    /* Estados de Drop Target */
-    .drop-target {
-      transform: scale(1.05);
-      background: rgba(0, 212, 255, 0.2) !important;
-      border-color: var(--accent-color) !important;
-      transition: all 0.2s ease;
-    }
-
-    /* Modal de Confirmación de Desinstalación */
-    .uninstall-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      backdrop-filter: blur(15px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      animation: uninstall-modal-fade 0.3s ease;
-    }
-
-    @keyframes uninstall-modal-fade {
-      from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-      }
-      to {
-        opacity: 1;
-        backdrop-filter: blur(15px);
-      }
-    }
-
-    .uninstall-content {
-      background: var(--primary-bg);
-      backdrop-filter: blur(40px);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 30px;
-      max-width: 85%;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-      animation: uninstall-slide-up 0.3s ease;
-    }
-
-    @keyframes uninstall-slide-up {
-      from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .uninstall-icon {
-      font-size: 3em;
-      margin-bottom: 15px;
-      color: var(--danger-color);
-      animation: uninstall-pulse 2s infinite;
-    }
-
-    @keyframes uninstall-pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.1);
-      }
-    }
-
-    .uninstall-title {
-      font-size: 1.3em;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .uninstall-message {
-      margin-bottom: 25px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    .uninstall-app-name {
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .uninstall-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-    }
-
-    .uninstall-btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      min-width: 110px;
-    }
-
-    .uninstall-btn.confirm {
-      background: linear-gradient(135deg, var(--danger-color), #ff2222);
-      color: white;
-    }
-
-    .uninstall-btn.cancel {
-      background: var(--secondary-bg);
-      color: var(--text-primary);
-    }
-
-    .uninstall-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(255, 68, 68, 0.4);
-    }
-
-    .uninstall-btn.cancel:hover {
-      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
-    }
-
-    .uninstall-btn:active {
-      transform: translateY(0);
-    }
-
-    /* Estados de Scroll durante Drag */
-    body.drag-scrolling {
-      overflow: hidden;
-    }
-
-    .apps-container.drag-scrolling {
-      overflow-y: hidden;
-    }
-
-    /* Auto-scroll indicators */
-    .auto-scroll-top, .auto-scroll-bottom {
-      position: fixed;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: linear-gradient(180deg, 
-        rgba(0, 212, 255, 0.3) 0%, 
-        transparent 100%);
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .auto-scroll-top {
-      top: 0;
-      background: linear-gradient(0deg, 
-        transparent 0%, 
-        rgba(0, 212, 255, 0.3) 100%);
-    }
-
-    .auto-scroll-bottom {
-      bottom: 0;
-    }
-
-    .auto-scroll-top.active, .auto-scroll-bottom.active {
-      opacity: 1;
-    }
-
-    /* Mejoras de Responsividad para móviles pequeños */
-    @media (max-width: 360px) {
-      .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 12px;
-      }
-
-      .app-item {
-        padding: 16px 10px;
-      }
-
-      .app-icon {
-        width: 50px;
-        height: 50px;
-      }
-
-      .time {
-        font-size: 3em;
-      }
-    }
-
-    /* ========== AJUSTES ESPECÍFICOS PARA HORIZONTAL EN MÓVILES PEQUEÑOS ========== */
-    @media (orientation: landscape) and (max-height: 480px) {
-      body {
-        padding: 10px;
-        padding-bottom: 70px;
-      }
-
-      .header {
-        padding: 10px 15px;
-        margin-bottom: 10px;
-      }
-
-      .time {
-        font-size: 1.8em;
-      }
-
-      .date {
-        font-size: 0.8em;
-      }
-
-      .apps-container {
-        height: 60vh;
-      }
-
-      .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 8px;
-      }
-
-      .app-item {
-        padding: 8px 4px;
-      }
-
-      .app-icon {
-        width: 40px;
-        height: 40px;
-      }
-
-      .app-name {
-        font-size: 9px;
-        max-width: 55px;
-      }
-
-      .dock-container {
-        bottom: 10px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+        gap: 16px;
         padding: 8px;
       }
 
+      .app-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 12px;
+        border-radius: 20px;
+        background: var(--primary-bg);
+        backdrop-filter: blur(30px); 
+        border: 1px solid var(--glass-border);
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.3s, 
+                    box-shadow 0.3s;
+        position: relative;
+        user-select: none;
+        transform: translateZ(0); 
+        will-change: transform, box-shadow;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .app-item:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent-color);
+        box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+      }
+
+      .app-item.dragging {
+        opacity: 0.8;
+        transform: rotate(8deg) scale(1.05) translateZ(1px); 
+        border-color: var(--accent-color);
+        z-index: 1000;
+        box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+        will-change: transform;
+      }
+
+      .app-item.hidden {
+        display: none;
+      }
+
+      .app-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        object-fit: cover;
+        background: linear-gradient(135deg, var(--secondary-bg), transparent);
+        backface-visibility: hidden; 
+        transform: translateZ(0);
+      }
+
+      .app-name {
+        font-size: 12px;
+        text-align: center;
+        font-weight: 500;
+        max-width: 76px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-primary);
+      }
+
+      .dock-container {
+        position: fixed;
+        bottom: 24px;
+        left: 20px;
+        right: 20px;
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+        padding: 16px;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .dock-scroll {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        transform: translateZ(0); 
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .dock-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
       .dock-app {
-        width: 40px;
-        height: 40px;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        flex-shrink: 0;
+        object-fit: cover;
+        background: linear-gradient(135deg, var(--secondary-bg), transparent);
+        will-change: transform;
       }
-    }
 
-    /* Mejoras de accesibilidad */
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+      .dock-app:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
       }
-    }
 
-    /* Focus visible para navegación con teclado */
-    .app-item:focus-visible,
-    .dock-app:focus-visible,
-    .modal-btn:focus-visible {
-      outline: 2px solid var(--accent-color);
-      outline-offset: 2px;
-    }
+      /* ========== VISTA HORIZONTAL (DESKTOP HD) ========== */
+      @media (orientation: landscape) and (min-height: 480px) {
+        body {
+          padding: 15px;
+          padding-bottom: 100px;
+        }
 
-    /* Estados de error */
-    .error-message {
-      background: rgba(255, 68, 68, 0.1);
-      border: 1px solid var(--danger-color);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      margin: 20px 0;
-      color: var(--danger-light);
-    }
+        .header {
+          padding: 15px 20px;
+          margin-bottom: 15px;
+          border-radius: 16px;
+        }
 
-    /* Estados de éxito */
-    .success-message {
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid var(--success-color);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      margin: 20px 0;
-      color: var(--success-color);
-    }
+        .time {
+          font-size: 2.2em;
+          margin-bottom: 4px;
+        }
 
-    /* Scroll suave para todos los elementos desplazables */
-    .scroll-smooth {
-      scroll-behavior: smooth;
-    }
+        .date {
+          font-size: 0.9em;
+        }
 
-    /* Mejoras de rendimiento para transformaciones */
-    .performance-optimized {
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      perspective: 1000;
-    }
+        .search-container {
+          margin-bottom: 15px;
+        }
+
+        .search-input {
+          padding: 12px 20px;
+          padding-left: 45px;
+          font-size: 14px;
+          border-radius: 12px;
+        }
+
+        .search-icon {
+          left: 15px;
+          font-size: 1em;
+        }
+
+        .apps-container {
+          height: 65vh;
+        }
+
+        .apps-grid {
+          grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+          gap: 12px;
+          padding: 6px;
+        }
+
+        .app-item {
+          padding: 12px 8px;
+          border-radius: 14px;
+        }
+
+        .app-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          margin-bottom: 8px;
+        }
+
+        .app-name {
+          font-size: 11px;
+          max-width: 64px;
+        }
+
+        .dock-container {
+          bottom: 15px;
+          left: 15px;
+          right: 15px;
+          padding: 12px;
+          border-radius: 16px;
+        }
+
+        .dock-scroll {
+          gap: 12px;
+        }
+
+        .dock-app {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+        }
+
+        .app-stats {
+          margin-top: 12px;
+          font-size: 11px;
+        }
+      }
+
+      /* ========== VISTA HORIZONTAL EN PANTALLAS GRANDES ========== */
+      @media (orientation: landscape) and (min-width: 1024px) {
+        body {
+          padding: 20px 10%;
+          padding-bottom: 90px;
+        }
+
+        .header {
+          padding: 12px 20px;
+          margin-bottom: 12px;
+        }
+
+        .time {
+          font-size: 2em;
+        }
+
+        .date {
+          font-size: 0.85em;
+        }
+
+        .search-container {
+          margin-bottom: 12px;
+        }
+
+        .apps-container {
+          height: 70vh;
+        }
+
+        .apps-grid {
+          grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+          gap: 10px;
+        }
+
+        .app-item {
+          padding: 10px 6px;
+          border-radius: 12px;
+        }
+
+        .app-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+        }
+
+        .app-name {
+          font-size: 10px;
+          max-width: 60px;
+        }
+
+        .dock-container {
+          bottom: 12px;
+          left: 10%;
+          right: 10%;
+          padding: 10px;
+        }
+
+        .dock-app {
+          width: 44px;
+          height: 44px;
+        }
+      }
+
+      /* ========== VISTA HORIZONTAL EN PANTALLAS MUY GRANDES ========== */
+      @media (orientation: landscape) and (min-width: 1366px) {
+        body {
+          padding: 15px 15%;
+          padding-bottom: 80px;
+        }
+
+        .apps-grid {
+          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+          gap: 8px;
+        }
+
+        .app-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .app-name {
+          font-size: 9px;
+          max-width: 55px;
+        }
+
+        .dock-container {
+          left: 15%;
+          right: 15%;
+        }
+
+        .dock-app {
+          width: 40px;
+          height: 40px;
+        }
+      }
+
+      .drag-ghost {
+        position: fixed !important;
+        z-index: 10000 !important;
+        pointer-events: none !important;
+        transform: rotate(5deg) scale(1.1);
+        box-shadow: 0 10px 40px rgba(0, 212, 255, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease; 
+        will-change: transform, top, left; 
+      }
+      
+      .drop-target {
+        transform: scale(1.05);
+        background: rgba(0, 212, 255, 0.2) !important;
+        border-color: var(--accent-color) !important;
+        transition: all 0.2s ease;
+        will-change: transform;
+      }
+
+      /* Indicadores de Gestos */
+      .gesture-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 20px 30px;
+        z-index: 10000;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        text-align: center;
+        display: none;
+        animation: gesture-popup 0.3s ease-out;
+      }
+
+      @keyframes gesture-popup {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .gesture-icon {
+        font-size: 2em;
+        margin-bottom: 8px;
+      }
+
+      .gesture-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Modal Moderno */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(20px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        animation: modal-fade-in 0.3s ease-out;
+      }
+
+      @keyframes modal-fade-in {
+        from {
+          opacity: 0;
+          backdrop-filter: blur(0px);
+        }
+        to {
+          opacity: 1;
+          backdrop-filter: blur(20px);
+        }
+      }
+
+      .modal-content {
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        padding: 30px;
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+        max-width: 90%;
+        max-height: 80%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: modal-slide-up 0.3s ease-out;
+      }
+
+      @keyframes modal-slide-up {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-title {
+        text-align: center;
+        margin-bottom: 24px;
+        font-size: 1.4em;
+        font-weight: 600;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .modal-btn {
+        padding: 14px 24px;
+        border: none;
+        border-radius: 12px;
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        min-width: 120px;
+      }
+
+      .modal-btn.primary {
+        background: linear-gradient(135deg, var(--accent-color), #0099ff);
+      }
+
+      .modal-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
+      }
+
+      .modal-btn:active {
+        transform: translateY(0);
+      }
+
+      /* Estados de Gestos */
+      .app-item.press-1s {
+        border-color: var(--warning-color);
+        background: rgba(255, 170, 0, 0.1);
+        animation: pulse-warning 1s infinite alternate;
+      }
+
+      .app-item.press-2s {
+        border-color: var(--success-color);
+        background: rgba(0, 255, 136, 0.1);
+        animation: pulse-success 1s infinite alternate;
+      }
+
+      .app-item.press-4s {
+        border-color: var(--danger-color);
+        background: rgba(255, 68, 68, 0.1);
+        animation: pulse-danger 0.8s infinite alternate;
+      }
+
+      .app-item.press-6s {
+        border-color: var(--danger-color);
+        background: rgba(255, 68, 68, 0.2);
+        animation: pulse-danger-fast 0.5s infinite alternate;
+      }
+
+      @keyframes pulse-warning {
+        from { 
+          border-color: var(--warning-color);
+          box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+        }
+        to { 
+          border-color: #ffcc00;
+          box-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
+        }
+      }
+
+      @keyframes pulse-success {
+        from { 
+          border-color: var(--success-color);
+          box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+        to { 
+          border-color: #00ffaa;
+          box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+        }
+      }
+
+      @keyframes pulse-danger {
+        from { 
+          border-color: var(--danger-color);
+          box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+        to { 
+          border-color: var(--danger-light);
+          box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+        }
+      }
+
+      @keyframes pulse-danger-fast {
+        from { 
+          border-color: var(--danger-color);
+          background: rgba(255, 68, 68, 0.2);
+          box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+        }
+        to { 
+          border-color: var(--danger-light);
+          background: rgba(255, 68, 68, 0.3);
+          box-shadow: 0 0 25px rgba(255, 68, 68, 0.7);
+        }
+      }
+
+      .app-stats {
+        text-align: center;
+        margin-top: 16px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .background-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+          rgba(15, 20, 30, 0.9) 0%, 
+          rgba(26, 43, 60, 0.8) 100%);
+        z-index: -1;
+      }
+
+      .uninstall-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(15px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: uninstall-modal-fade 0.3s ease;
+      }
+
+      @keyframes uninstall-modal-fade {
+        from {
+          opacity: 0;
+          backdrop-filter: blur(0px);
+        }
+        to {
+          opacity: 1;
+          backdrop-filter: blur(15px);
+        }
+      }
+
+      .uninstall-content {
+        background: var(--primary-bg);
+        backdrop-filter: blur(40px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 30px;
+        max-width: 85%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        animation: uninstall-slide-up 0.3s ease;
+      }
+
+      @keyframes uninstall-slide-up {
+        from {
+          opacity: 0;
+          transform: translateY(40px) scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .uninstall-icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+        color: var(--danger-color);
+        animation: uninstall-pulse 2s infinite;
+      }
+
+      @keyframes uninstall-pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      .uninstall-title {
+        font-size: 1.3em;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .uninstall-message {
+        margin-bottom: 25px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      .uninstall-app-name {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .uninstall-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .uninstall-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 110px;
+      }
+
+      .uninstall-btn.confirm {
+        background: linear-gradient(135deg, var(--danger-color), #ff2222);
+        color: white;
+      }
+
+      .uninstall-btn.cancel {
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+      }
+
+      .uninstall-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(255, 68, 68, 0.4);
+      }
+
+      .uninstall-btn.cancel:hover {
+        box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+      }
+
+      .uninstall-btn:active {
+        transform: translateY(0);
+      }
+
+      .auto-scroll-top, .auto-scroll-bottom {
+        position: fixed;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(180deg, 
+          rgba(0, 212, 255, 0.3) 0%, 
+          transparent 100%);
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .auto-scroll-top {
+        top: 0;
+        background: linear-gradient(0deg, 
+          transparent 0%, 
+          rgba(0, 212, 255, 0.3) 100%);
+      }
+
+      .auto-scroll-bottom {
+        bottom: 0;
+      }
+
+      .auto-scroll-top.active, .auto-scroll-bottom.active {
+        opacity: 1;
+      }
+
+      /* Mejoras de Responsividad para móviles pequeños */
+      @media (max-width: 360px) {
+        .apps-grid {
+          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          gap: 12px;
+        }
+
+        .app-item {
+          padding: 16px 10px;
+        }
+
+        .app-icon {
+          width: 50px;
+          height: 50px;
+        }
+
+        .time {
+          font-size: 3em;
+        }
+      }
+
+      /* ========== AJUSTES ESPECÍFICOS PARA HORIZONTAL EN MÓVILES PEQUEÑOS ========== */
+      @media (orientation: landscape) and (max-height: 480px) {
+        body {
+          padding: 10px;
+          padding-bottom: 70px;
+        }
+
+        .header {
+          padding: 10px 15px;
+          margin-bottom: 10px;
+        }
+
+        .time {
+          font-size: 1.8em;
+        }
+
+        .date {
+          font-size: 0.8em;
+        }
+
+        .apps-container {
+          height: 60vh;
+        }
+
+        .apps-grid {
+          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+          gap: 8px;
+        }
+
+        .app-item {
+          padding: 8px 4px;
+        }
+
+        .app-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .app-name {
+          font-size: 9px;
+          max-width: 55px;
+        }
+
+        .dock-container {
+          bottom: 10px;
+          padding: 8px;
+        }
+
+        .dock-app {
+          width: 40px;
+          height: 40px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      .app-item:focus-visible,
+      .dock-app:focus-visible,
+      .modal-btn:focus-visible {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
+
+      .performance-optimized {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000;
+      }
     </style>
   </head>
   <body>
     <div class="background-overlay"></div>
 
-    <!-- Indicadores de auto-scroll durante drag -->
     <div class="auto-scroll-top" id="autoScrollTop"></div>
     <div class="auto-scroll-bottom" id="autoScrollBottom"></div>
 
@@ -996,7 +938,9 @@ box-sizing: border-box;
     <div class="search-container">
       <div class="search-icon">🔍</div>
       <input type="text" class="search-input" id="searchInput" 
-                                              placeholder="Buscar aplicaciones...">
+                                              placeholder="Buscar aplicaciones..." 
+                                              autocomplete="off" 
+                                              spellcheck="false"> 
     </div>
 
     <div class="apps-container" id="appsContainer">
@@ -1039,7 +983,6 @@ box-sizing: border-box;
       </div>
     </div>
 
-    <!-- Modal para fondo de pantalla -->
     <div class="modal" id="wallpaperModal">
       <div class="modal-content">
         <div class="modal-title">Personalizar Fondo</div>
@@ -1051,46 +994,32 @@ box-sizing: border-box;
       </div>
     </div>
 
-    <!-- Indicador de Gestos -->
     <div class="gesture-indicator" id="gestureIndicator">
       <div class="gesture-icon" id="gestureIcon">👆</div>
       <div class="gesture-text" id="gestureText">Mantén presionado</div>
     </div>
 
-    <!-- Modal de confirmación de desinstalación (se crea dinámicamente) -->
-    <!-- Se creará via JavaScript cuando sea necesario -->
-
     <input type="file" id="wallpaperInput" accept="image/*" style="display: none;">
 
-    <!-- Botón temporal para debug (opcional, puedes removerlo después) 
-      <button style="
-      position: fixed; 
-      top: 10px; 
-      right: 10px; 
-      background: var(--accent-color); 
-      color: white; 
-      border: none; 
-      border-radius: 50%; 
-      width: 40px; 
-      height: 40px; 
-      font-size: 16px; 
-      cursor: pointer;
-      z-index: 9999;
-      opacity: 0.7;
-      transition: opacity 0.3s ease;
-      " 
-      onmouseover="this.style.opacity='1'" 
-      onmouseout="this.style.opacity='0.7'"
-      onclick="openWallpaperPicker()" title="Cambiar fondo">🎨</button>
-    -->
     <script>
-      // Variables globales
       let allApps = [];
       let favoriteApps = JSON.parse(localStorage.getItem('favoriteApps')) || [];
       let hiddenApps = JSON.parse(localStorage.getItem('hiddenApps')) || [];
       let appPositions = JSON.parse(localStorage.getItem('appPositions')) || {};
 
-      // Variables para gestión de gestos
+      const appsContainer = document.getElementById('appsContainer');
+      const appsGrid = document.getElementById('appsGrid');
+      const dockScroll = document.getElementById('dockScroll');
+      const searchInput = document.getElementById('searchInput');
+      const appStatsElement = document.getElementById('appStats');
+      const currentTimeElement = document.getElementById('currentTime');
+      const currentDateElement = document.getElementById('currentDate');
+      const headerArea = document.getElementById('headerArea');
+      const wallpaperModal = document.getElementById('wallpaperModal');
+      const gestureIndicator = document.getElementById('gestureIndicator');
+      const gestureText = document.getElementById('gestureText');
+      const gestureIcon = document.getElementById('gestureIcon');
+
       let currentGesture = {
         appElement: null,
         packageName: null,
@@ -1104,11 +1033,9 @@ box-sizing: border-box;
         dropTarget: null
       };
 
-      // Variables para drag and drop
       let dragScrollInterval = null;
       let isReordering = false;
 
-      // Umbrales de gestos (en milisegundos)
       const GESTURE_TIMING = {
         TAP: 500,
         DRAG_START: 1000,
@@ -1117,61 +1044,52 @@ box-sizing: border-box;
         UNINSTALL: 6000
       };
 
-      // Umbral de movimiento para considerar arrastre (en píxeles)
       const MOVE_THRESHOLD = 20;
 
-      // Cargar aplicaciones desde Android
       window.loadAllApps = function(apps) {
-        allApps = apps;
-        renderApps();
-        updateTime();
-        setInterval(updateTime, 1000);
-        updateAppStats();
+        requestAnimationFrame(() => {
+          allApps = apps;
+          renderApps();
+          updateTime();
+          updateAppStats();
+        });
+        
+        if (!window.timeUpdateInterval) {
+           window.timeUpdateInterval = setInterval(updateTime, 1000);
+        }
       };
 
-      // Inicialización cuando el DOM está listo
       document.addEventListener('DOMContentLoaded', function() {
         initializeEventListeners();
         updateTime();
         updateAppStats();
         loadSavedWallpaper();
 
-        // Prevenir comportamientos no deseados
         document.addEventListener('touchmove', function(e) {
           if (e.touches.length > 1) {
             e.preventDefault();
           }
         }, { passive: false });
 
-        // Permitir scroll normal
         document.addEventListener('touchstart', function(e) {
           if (e.target.closest('.apps-container') || e.target.closest('.dock-scroll')) {
-            // Permitir scroll en estas áreas
           }
         }, { passive: true });
       });
 
       function initializeEventListeners() {
-        // Eventos de búsqueda
-        const searchInput = document.getElementById('searchInput');
         searchInput.addEventListener('input', filterApps);
 
-        // Eventos del modal
         document.getElementById('galleryBtn').addEventListener('click', selectWallpaperFromGallery);
         document.getElementById('defaultWallpaperBtn').addEventListener('click', useDefaultWallpaper);
         document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
 
-        // Eventos del selector de archivos
         document.getElementById('wallpaperInput').addEventListener('change', handleWallpaperSelect);
 
-        // Eventos del header para mostrar apps ocultas
-        const headerArea = document.getElementById('headerArea');
         setupHeaderGestureEvents(headerArea);
 
-        // Evento de doble tap en header para abrir selector de fondo
         setupDoubleTapForWallpaper(headerArea);
 
-        // Prevenir scroll durante drag
         document.addEventListener('touchmove', function(e) {
           if (currentGesture.isDragging || isReordering) {
             e.preventDefault();
@@ -1182,46 +1100,25 @@ box-sizing: border-box;
       function setupHeaderGestureEvents(headerElement) {
         let headerPressTimer = null;
 
-        headerElement.addEventListener('touchstart', function(e) {
-          headerPressTimer = setTimeout(() => {
+        const startPress = () => {
+           headerPressTimer = setTimeout(() => {
             showHiddenApps();
           }, GESTURE_TIMING.HIDE);
-        });
-
-        headerElement.addEventListener('touchend', function(e) {
-          if (headerPressTimer) {
+        };
+        
+        const endPress = () => {
+           if (headerPressTimer) {
             clearTimeout(headerPressTimer);
             headerPressTimer = null;
           }
-        });
+        };
 
-        headerElement.addEventListener('touchmove', function(e) {
-          if (headerPressTimer) {
-            clearTimeout(headerPressTimer);
-            headerPressTimer = null;
-          }
-        });
-
-        // Eventos similares para mouse en el header
-        headerElement.addEventListener('mousedown', function(e) {
-          headerPressTimer = setTimeout(() => {
-            showHiddenApps();
-          }, GESTURE_TIMING.HIDE);
-        });
-
-        headerElement.addEventListener('mouseup', function(e) {
-          if (headerPressTimer) {
-            clearTimeout(headerPressTimer);
-            headerPressTimer = null;
-          }
-        });
-
-        headerElement.addEventListener('mouseleave', function(e) {
-          if (headerPressTimer) {
-            clearTimeout(headerPressTimer);
-            headerPressTimer = null;
-          }
-        });
+        headerElement.addEventListener('touchstart', startPress);
+        headerElement.addEventListener('touchend', endPress);
+        headerElement.addEventListener('touchmove', endPress); 
+        headerElement.addEventListener('mousedown', startPress);
+        headerElement.addEventListener('mouseup', endPress);
+        headerElement.addEventListener('mouseleave', endPress);
       }
 
       function setupDoubleTapForWallpaper(headerElement) {
@@ -1237,29 +1134,29 @@ box-sizing: border-box;
       }
 
       function renderApps() {
-        const grid = document.getElementById('appsGrid');
-        grid.innerHTML = '';
-
-        // Ordenar apps según posiciones guardadas
+        const fragment = document.createDocumentFragment();
+        
         const sortedApps = [...allApps].sort((a, b) => {
-          const posA = appPositions[a.packageName] || 0;
-          const posB = appPositions[b.packageName] || 0;
-          return posA - posB;
+          const aPos = appPositions[a.packageName] === undefined ? allApps.findIndex(app => app.packageName === a.packageName) : appPositions[a.packageName];
+          const bPos = appPositions[b.packageName] === undefined ? allApps.findIndex(app => app.packageName === b.packageName) : appPositions[b.packageName];
+          return aPos - bPos;
         });
 
         sortedApps.forEach((app, index) => {
-          if (!appPositions[app.packageName]) {
             appPositions[app.packageName] = index;
-          }
+        });
 
-          // Si la app está oculta, no renderizar
+        sortedApps.forEach(app => {
           if (hiddenApps.includes(app.packageName)) {
             return;
           }
 
           const appElement = createAppElement(app);
-          grid.appendChild(appElement);
+          fragment.appendChild(appElement);
         });
+
+        appsGrid.innerHTML = '';
+        appsGrid.appendChild(fragment);
 
         renderDock();
         saveAppPositions();
@@ -1267,45 +1164,46 @@ box-sizing: border-box;
 
       function createAppElement(app) {
         const appElement = document.createElement('div');
-        appElement.className = 'app-item';
+        appElement.className = 'app-item performance-optimized';
         appElement.setAttribute('data-package', app.packageName);
 
         appElement.innerHTML = `
         <img src="data:image/png;base64,${app.icon}" 
-             class="app-icon" alt="${app.name}"
+             class="app-icon performance-optimized" alt="${app.name}"
+             loading="lazy"
              onerror="this.style.background='rgba(255,255,255,0.1)'">
         <div class="app-name">${app.name}</div>
     `;
 
-        // Configurar eventos de gestos
         setupGestureEvents(appElement, app);
 
         return appElement;
       }
 
       function setupGestureEvents(appElement, app) {
-        // Eventos táctiles
-        appElement.addEventListener('touchstart', handleGestureStart.bind(null, appElement, app));
-        appElement.addEventListener('touchmove', handleGestureMove);
-        appElement.addEventListener('touchend', handleGestureEnd);
+        const passiveFalseOptions = { passive: false };
+        const passiveTrueOptions = { passive: true };
 
-        // Eventos de ratón
-        appElement.addEventListener('mousedown', handleGestureStart.bind(null, appElement, app));
-        appElement.addEventListener('mousemove', handleGestureMove);
-        appElement.addEventListener('mouseup', handleGestureEnd);
-        appElement.addEventListener('mouseleave', handleGestureCancel);
+        appElement.addEventListener('touchstart', handleGestureStart.bind(null, appElement, app), passiveFalseOptions);
+        appElement.addEventListener('touchmove', handleGestureMove, passiveFalseOptions); 
+        appElement.addEventListener('touchend', handleGestureEnd, passiveTrueOptions);
+
+        appElement.addEventListener('mousedown', handleGestureStart.bind(null, appElement, app), passiveFalseOptions);
+        appElement.addEventListener('mousemove', handleGestureMove, passiveFalseOptions);
+        appElement.addEventListener('mouseup', handleGestureEnd, passiveTrueOptions);
+        appElement.addEventListener('mouseleave', handleGestureCancel, passiveTrueOptions);
       }
 
       function handleGestureStart(appElement, app, event) {
         const isTouch = event.type.includes('touch');
-        const clientX = isTouch ? event.touches[0].clientX : event.clientX;
-        const clientY = isTouch ? event.touches[0].clientY : event.clientY;
+        const eventData = isTouch ? event.touches[0] : event;
+        const clientX = eventData.clientX;
+        const clientY = eventData.clientY;
 
-        // Reiniciar estado del gesto
         currentGesture = {
           appElement: appElement,
           packageName: app.packageName,
-          startTime: Date.now(),
+          startTime: performance.now(),
           startX: clientX,
           startY: clientY,
           timer: null,
@@ -1315,7 +1213,6 @@ box-sizing: border-box;
           dropTarget: null
         };
 
-        // Iniciar temporizador para feedback visual
         currentGesture.timer = setTimeout(() => {
           if (!currentGesture.hasMoved) {
             showGestureFeedback('Mover para reordenar', '↕️');
@@ -1323,7 +1220,6 @@ box-sizing: border-box;
           }
         }, GESTURE_TIMING.DRAG_START);
 
-        // Temporizador para favoritos
         setTimeout(() => {
           if (currentGesture.appElement === appElement && !currentGesture.hasMoved && !currentGesture.isDragging) {
             showGestureFeedback('Agregar a favoritos', '⭐');
@@ -1332,7 +1228,6 @@ box-sizing: border-box;
           }
         }, GESTURE_TIMING.FAVORITE);
 
-        // Temporizador para ocultar
         setTimeout(() => {
           if (currentGesture.appElement === appElement && !currentGesture.hasMoved && !currentGesture.isDragging) {
             showGestureFeedback('Ocultar aplicación', '👁️');
@@ -1341,7 +1236,6 @@ box-sizing: border-box;
           }
         }, GESTURE_TIMING.HIDE);
 
-        // Temporizador para desinstalar
         setTimeout(() => {
           if (currentGesture.appElement === appElement && !currentGesture.hasMoved && !currentGesture.isDragging) {
             showGestureFeedback('Desinstalar aplicación', '🗑️');
@@ -1359,70 +1253,61 @@ box-sizing: border-box;
         if (!currentGesture.appElement) return;
 
         const isTouch = event.type.includes('touch');
-        const clientX = isTouch ? event.touches[0].clientX : event.clientX;
-        const clientY = isTouch ? event.touches[0].clientY : event.clientY;
+        const eventData = isTouch ? event.touches[0] : event;
+        const clientX = eventData.clientX;
+        const clientY = eventData.clientY;
 
         const deltaX = Math.abs(clientX - currentGesture.startX);
         const deltaY = Math.abs(clientY - currentGesture.startY);
         const totalMove = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-        // Verificar si se superó el umbral de movimiento
         if (totalMove > MOVE_THRESHOLD) {
           currentGesture.hasMoved = true;
 
-          // Si ha pasado el tiempo mínimo para arrastre, activarlo
-          const elapsedTime = Date.now() - currentGesture.startTime;
+          const elapsedTime = performance.now() - currentGesture.startTime;
           if (elapsedTime >= GESTURE_TIMING.DRAG_START && !currentGesture.isDragging) {
             startDrag(currentGesture.appElement, clientX, clientY);
           }
 
-          // Si estamos arrastrando, actualizar posición
           if (currentGesture.isDragging) {
-            updateDragPosition(clientX, clientY);
-            checkAutoScroll(clientY);
+            requestAnimationFrame(() => {
+              updateDragPosition(clientX, clientY);
+              checkAutoScroll(clientY);
+            });
           }
         }
 
-        if (!isTouch) {
-          event.preventDefault();
+        if ((currentGesture.isDragging || currentGesture.hasMoved) && event.cancelable) {
+            event.preventDefault();
         }
       }
 
       function handleGestureEnd(event) {
         if (!currentGesture.appElement) return;
 
-        const elapsedTime = Date.now() - currentGesture.startTime;
-        const isTouch = event.type.includes('touch');
-
-        // Limpiar temporizadores y clases
+        const elapsedTime = performance.now() - currentGesture.startTime;
+        
         clearTimeout(currentGesture.timer);
         currentGesture.appElement.classList.remove('press-1s', 'press-2s', 'press-4s', 'press-6s');
         hideGestureFeedback();
         stopAutoScroll();
 
-        // Determinar la acción basada en el tiempo y movimiento
         if (!currentGesture.hasMoved && !currentGesture.isDragging) {
           if (elapsedTime < GESTURE_TIMING.TAP) {
-            // Tap rápido: lanzar app
             launchApp(currentGesture.packageName);
           } else if (elapsedTime >= GESTURE_TIMING.FAVORITE && elapsedTime < GESTURE_TIMING.HIDE) {
-            // Mantenimiento de 2 segundos: favoritos
             toggleFavorite(currentGesture.packageName);
           } else if (elapsedTime >= GESTURE_TIMING.HIDE && elapsedTime < GESTURE_TIMING.UNINSTALL) {
-            // Mantenimiento de 4 segundos: ocultar
             toggleAppVisibility(currentGesture.packageName);
           } else if (elapsedTime >= GESTURE_TIMING.UNINSTALL) {
-            // Mantenimiento de 6 segundos: desinstalar (con confirmación)
             showUninstallConfirmation(currentGesture.packageName, currentGesture.appElement.querySelector('.app-name').textContent);
           }
         }
 
-        // Finalizar arrastre si estaba activo
         if (currentGesture.isDragging) {
           endDrag();
         }
 
-        // Reiniciar gesto actual
         currentGesture = {
           appElement: null,
           packageName: null,
@@ -1435,10 +1320,6 @@ box-sizing: border-box;
           dragElement: null,
           dropTarget: null
         };
-
-        if (!isTouch) {
-          event.preventDefault();
-        }
       }
 
       function handleGestureCancel() {
@@ -1467,13 +1348,10 @@ box-sizing: border-box;
         }
       }
 
-      // ========== SISTEMA DE DRAG AND DROP MEJORADO ==========
-
       function startDrag(appElement, clientX, clientY) {
         currentGesture.isDragging = true;
         isReordering = true;
 
-        // Crear elemento de arrastre
         const dragElement = appElement.cloneNode(true);
         dragElement.style.position = 'fixed';
         dragElement.style.zIndex = '10000';
@@ -1486,35 +1364,48 @@ box-sizing: border-box;
         document.body.appendChild(dragElement);
         currentGesture.dragElement = dragElement;
 
-        // Ocultar elemento original temporalmente
+        const rect = appElement.getBoundingClientRect();
+        
+        currentGesture.dragElement.style.left = rect.left + 'px';
+        currentGesture.dragElement.style.top = rect.top + 'px';
+        
         appElement.style.opacity = '0.3';
 
-        updateDragPosition(clientX, clientY);
+        updateDragPosition(clientX, clientY, true);
+
         hideGestureFeedback();
       }
 
-      function updateDragPosition(clientX, clientY) {
+      function updateDragPosition(clientX, clientY, isInit = false) {
         if (!currentGesture.dragElement) return;
 
         const dragElement = currentGesture.dragElement;
-        const rect = dragElement.getBoundingClientRect();
+        
+        const deltaX = clientX - currentGesture.startX;
+        const deltaY = clientY - currentGesture.startY;
 
-        // Posicionar el elemento de arrastre centrado en el puntero
-        dragElement.style.left = (clientX - rect.width / 2) + 'px';
-        dragElement.style.top = (clientY - rect.height / 2) + 'px';
+        if (isInit) {
+            dragElement.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(5deg) scale(1.1)`;
+        } else {
+             dragElement.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(5deg) scale(1.1)`;
+        }
 
-        // Verificar reordenación
         checkReordering(clientX, clientY);
       }
 
       function checkReordering(clientX, clientY) {
-        const appElements = document.querySelectorAll('.app-item:not(.dragging)');
+        const appElements = appsGrid.querySelectorAll('.app-item');
         let closestElement = null;
         let closestDistance = Infinity;
 
+        const rectMap = new Map();
         appElements.forEach(element => {
-          if (element.style.opacity !== '0.3') { // No considerar el elemento que se está arrastrando
-            const rect = element.getBoundingClientRect();
+            rectMap.set(element, element.getBoundingClientRect());
+        });
+
+        appElements.forEach(element => {
+          if (element.style.opacity !== '0.3' && !hiddenApps.includes(element.getAttribute('data-package'))) { 
+            const rect = rectMap.get(element);
             const elementCenterX = rect.left + rect.width / 2;
             const elementCenterY = rect.top + rect.height / 2;
 
@@ -1530,44 +1421,42 @@ box-sizing: border-box;
           }
         });
 
-        // Resaltar el elemento más cercano
-        appElements.forEach(element => {
-          element.classList.remove('drop-target');
-        });
+        requestAnimationFrame(() => {
+            appElements.forEach(element => {
+              element.classList.remove('drop-target');
+            });
 
-        if (closestElement && closestDistance < 100) { // Umbral de 100px
-          closestElement.classList.add('drop-target');
-          currentGesture.dropTarget = closestElement;
-        } else {
-          currentGesture.dropTarget = null;
-        }
+            if (closestElement && closestDistance < 100) {
+              closestElement.classList.add('drop-target');
+              currentGesture.dropTarget = closestElement;
+            } else {
+              currentGesture.dropTarget = null;
+            }
+        });
       }
 
       function endDrag() {
         if (currentGesture.dragElement) {
-          // Eliminar elemento de arrastre
-          currentGesture.dragElement.remove();
-          currentGesture.dragElement = null;
+          requestAnimationFrame(() => {
+            currentGesture.dragElement.remove();
+            currentGesture.dragElement = null;
+          });
         }
 
-        // Restaurar opacidad del elemento original
         if (currentGesture.appElement) {
           currentGesture.appElement.style.opacity = '';
         }
 
-        // Aplicar reordenación si hay un objetivo
         if (currentGesture.dropTarget) {
           const targetPackage = currentGesture.dropTarget.getAttribute('data-package');
           const sourcePackage = currentGesture.packageName;
 
           reorderApps(sourcePackage, targetPackage);
 
-          // Restaurar estilo del objetivo
           currentGesture.dropTarget.classList.remove('drop-target');
         }
 
-        // Restaurar todos los elementos
-        document.querySelectorAll('.app-item').forEach(element => {
+        appsGrid.querySelectorAll('.app-item').forEach(element => {
           element.classList.remove('drop-target');
         });
 
@@ -1577,15 +1466,17 @@ box-sizing: border-box;
       }
 
       function reorderApps(sourcePackage, targetPackage) {
-        const sourceIndex = allApps.findIndex(app => app.packageName === sourcePackage);
-        const targetIndex = allApps.findIndex(app => app.packageName === targetPackage);
+        let sourceIndex = -1;
+        let targetIndex = -1;
+        
+        const allPackages = allApps.map(app => app.packageName);
+        sourceIndex = allApps.findIndex(app => app.packageName === sourcePackage);
+        targetIndex = allApps.findIndex(app => app.packageName === targetPackage);
 
         if (sourceIndex !== -1 && targetIndex !== -1 && sourceIndex !== targetIndex) {
-          // Mover la app en el array
           const [movedApp] = allApps.splice(sourceIndex, 1);
           allApps.splice(targetIndex, 0, movedApp);
 
-          // Actualizar posiciones
           allApps.forEach((app, index) => {
             appPositions[app.packageName] = index;
           });
@@ -1599,17 +1490,12 @@ box-sizing: border-box;
         }
       }
 
-      // ========== AUTO SCROLL DURING DRAG ==========
-
       function checkAutoScroll(clientY) {
-        const container = document.getElementById('appsContainer');
-        const containerRect = container.getBoundingClientRect();
-        const scrollThreshold = 100; // 100px desde los bordes
+        const containerRect = appsContainer.getBoundingClientRect();
+        const scrollThreshold = 100;
 
-        // Detener scroll anterior
         stopAutoScroll();
 
-        // Verificar si necesita scroll hacia arriba
         if (clientY < containerRect.top + scrollThreshold) {
           startAutoScroll(-1);
           document.getElementById('autoScrollTop').classList.add('active');
@@ -1617,7 +1503,6 @@ box-sizing: border-box;
           document.getElementById('autoScrollTop').classList.remove('active');
         }
 
-        // Verificar si necesita scroll hacia abajo
         if (clientY > containerRect.bottom - scrollThreshold) {
           startAutoScroll(1);
           document.getElementById('autoScrollBottom').classList.add('active');
@@ -1627,27 +1512,33 @@ box-sizing: border-box;
       }
 
       function startAutoScroll(direction) {
-        const container = document.getElementById('appsContainer');
         const scrollSpeed = 20;
 
-        dragScrollInterval = setInterval(() => {
-          container.scrollTop += scrollSpeed * direction;
-        }, 16); // ~60fps
+        let lastScrollTime = performance.now();
+        const scrollStep = (timestamp) => {
+          const deltaTime = timestamp - lastScrollTime;
+          lastScrollTime = timestamp;
+          appsContainer.scrollTop += scrollSpeed * direction * (deltaTime / 16); 
+
+          if (dragScrollInterval) {
+            dragScrollInterval = requestAnimationFrame(scrollStep);
+          }
+        };
+
+        if (dragScrollInterval) stopAutoScroll();
+        dragScrollInterval = requestAnimationFrame(scrollStep);
       }
 
       function stopAutoScroll() {
         if (dragScrollInterval) {
-          clearInterval(dragScrollInterval);
+          cancelAnimationFrame(dragScrollInterval);
           dragScrollInterval = null;
         }
         document.getElementById('autoScrollTop').classList.remove('active');
         document.getElementById('autoScrollBottom').classList.remove('active');
       }
 
-      // ========== FUNCIÓN DE DESINSTALACIÓN CON CONFIRMACIÓN ==========
-
       function showUninstallConfirmation(packageName, appName) {
-        // Crear modal de confirmación
         const modal = document.createElement('div');
         modal.className = 'uninstall-modal';
         modal.innerHTML = `
@@ -1666,7 +1557,6 @@ box-sizing: border-box;
 
         document.body.appendChild(modal);
 
-        // Event listeners para los botones
         modal.querySelector('.uninstall-btn.confirm').addEventListener('click', function() {
           if (typeof Android !== 'undefined' && Android.uninstallApp) {
             Android.uninstallApp(packageName);
@@ -1678,7 +1568,6 @@ box-sizing: border-box;
           modal.remove();
         });
 
-        // Cerrar modal al hacer click fuera
         modal.addEventListener('click', function(e) {
           if (e.target === modal) {
             modal.remove();
@@ -1686,34 +1575,33 @@ box-sizing: border-box;
         });
       }
 
-      // ========== FUNCIONES PARA FONDO DE PANTALLA ==========
-
       function openWallpaperPicker() {
-        document.getElementById('wallpaperModal').style.display = 'flex';
+        wallpaperModal.style.display = 'flex';
       }
 
       function closeModal() {
-        document.getElementById('wallpaperModal').style.display = 'none';
+        wallpaperModal.style.display = 'none';
       }
 
       function selectWallpaperFromGallery() {
         if (typeof Android !== 'undefined' && Android.openGallery) {
           Android.openGallery();
         } else {
-          // Fallback: usar input file nativo
           document.getElementById('wallpaperInput').click();
         }
         closeModal();
       }
 
       function useDefaultWallpaper() {
-        document.body.style.backgroundImage = '';
-        document.body.style.background = 'linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%)';
-        localStorage.removeItem('customWallpaper');
-        closeModal();
-        if (typeof Android !== 'undefined' && Android.showToast) {
-          Android.showToast("🎨 Fondo restaurado");
+        if (localStorage.getItem('customWallpaper')) {
+           document.body.style.backgroundImage = '';
+           document.body.style.background = 'linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%)';
+           localStorage.removeItem('customWallpaper');
+           if (typeof Android !== 'undefined' && Android.showToast) {
+             Android.showToast("🎨 Fondo restaurado");
+           }
         }
+        closeModal();
       }
 
       function handleWallpaperSelect(e) {
@@ -1722,9 +1610,8 @@ box-sizing: border-box;
           handleImageFile(file);
         }
       }
-
+      
       function handleImageFile(file) {
-        // Validar tipo de archivo
         if (!file.type.startsWith('image/')) {
           if (typeof Android !== 'undefined' && Android.showToast) {
             Android.showToast("❌ Solo se permiten imágenes");
@@ -1732,7 +1619,6 @@ box-sizing: border-box;
           return;
         }
 
-        // Validar tamaño (máximo 10MB)
         if (file.size > 10 * 1024 * 1024) {
           if (typeof Android !== 'undefined' && Android.showToast) {
             Android.showToast("❌ Imagen demasiado grande (máx. 10MB)");
@@ -1760,20 +1646,16 @@ box-sizing: border-box;
         }
       }
 
-      // Función para manejar la imagen seleccionada desde Android
       window.onImageSelected = function(imageUri) {
-        // Crear una imagen para cargar la URI
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = function() {
-          // Crear un canvas para convertir la imagen a base64
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           canvas.width = img.width;
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
 
-          // Convertir a base64
           const base64Data = canvas.toDataURL('image/jpeg', 0.8);
           applyWallpaper(base64Data);
         };
@@ -1781,6 +1663,7 @@ box-sizing: border-box;
           if (typeof Android !== 'undefined' && Android.showToast) {
             Android.showToast("❌ Error al cargar la imagen");
           }
+          console.error("Error loading image from URI:", imageUri);
         };
         img.src = imageUri;
       };
@@ -1788,13 +1671,11 @@ box-sizing: border-box;
       function loadSavedWallpaper() {
         const savedWallpaper = localStorage.getItem('customWallpaper');
         if (savedWallpaper) {
-          // Verificar si la imagen todavía es válida
           const img = new Image();
           img.onload = function() {
             document.body.style.backgroundImage = `url(${savedWallpaper})`;
           };
           img.onerror = function() {
-            // Si la imagen no se puede cargar, usar fondo predeterminado
             localStorage.removeItem('customWallpaper');
             document.body.style.background = 'linear-gradient(135deg, #0f1a2b 0%, #1a2b3c 100%)';
           };
@@ -1802,26 +1683,20 @@ box-sizing: border-box;
         }
       }
 
-      // ========== FUNCIONES AUXILIARES ==========
-
-        function showGestureFeedback(text, icon) {
-          const indicator = document.getElementById('gestureIndicator');
-          const gestureText = document.getElementById('gestureText');
-          const gestureIcon = document.getElementById('gestureIcon');
-
+      function showGestureFeedback(text, icon) {
           gestureText.textContent = text;
           gestureIcon.textContent = icon;
-          indicator.style.display = 'block';
+          gestureIndicator.style.display = 'block';
         }
 
       function hideGestureFeedback() {
-        const indicator = document.getElementById('gestureIndicator');
-        indicator.style.display = 'none';
+        gestureIndicator.style.display = 'none';
       }
 
       function showHiddenApps() {
         if (hiddenApps.length > 0) {
           hiddenApps = [];
+          localStorage.removeItem('hiddenApps');
           if (typeof Android !== 'undefined' && Android.showToast) {
             Android.showToast("👁️ Apps ocultas mostradas");
           }
@@ -1836,24 +1711,26 @@ box-sizing: border-box;
       }
 
       function renderDock() {
-        const dock = document.getElementById('dockScroll');
-        dock.innerHTML = '';
+        const fragment = document.createDocumentFragment();
 
         favoriteApps.forEach(packageName => {
           const app = allApps.find(a => a.packageName === packageName);
           if (app) {
             const dockApp = document.createElement('img');
-            dockApp.className = 'dock-app';
+            dockApp.className = 'dock-app performance-optimized';
             dockApp.src = `data:image/png;base64,${app.icon}`;
             dockApp.alt = app.name;
             dockApp.title = app.name;
             dockApp.onclick = () => launchApp(app.packageName);
-            dock.appendChild(dockApp);
+            fragment.appendChild(dockApp);
           }
         });
 
+        dockScroll.innerHTML = '';
         if (favoriteApps.length === 0) {
-          dock.innerHTML = '<div style="color: var(--text-secondary); padding: 16px; text-align: center; font-size: 14px;">Mantén 2s en cualquier app para agregar al dock</div>';
+          dockScroll.innerHTML = '<div style="color: var(--text-secondary); padding: 16px; text-align: center; font-size: 14px;">Mantén 2s en cualquier app para agregar al dock</div>';
+        } else {
+           dockScroll.appendChild(fragment);
         }
       }
 
@@ -1877,7 +1754,7 @@ box-sizing: border-box;
           }
         }
         localStorage.setItem('favoriteApps', JSON.stringify(favoriteApps));
-        renderApps();
+        renderDock(); 
         updateAppStats();
       }
 
@@ -1900,13 +1777,18 @@ box-sizing: border-box;
       }
 
       function filterApps() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const appItems = document.querySelectorAll('.app-item');
+        const searchTerm = searchInput.value.toLowerCase();
+        const appItems = appsGrid.querySelectorAll('.app-item');
 
         let visibleCount = 0;
         appItems.forEach(item => {
           const appName = item.querySelector('.app-name').textContent.toLowerCase();
-          if (appName.includes(searchTerm)) {
+          const packageName = item.getAttribute('data-package');
+
+          const isHidden = hiddenApps.includes(packageName);
+          const isMatch = appName.includes(searchTerm);
+
+          if (isMatch && !isHidden) {
             item.classList.remove('hidden');
             visibleCount++;
           } else {
@@ -1930,46 +1812,46 @@ box-sizing: border-box;
           day: 'numeric'
         });
 
-        document.getElementById('currentTime').textContent = timeString;
-        document.getElementById('currentDate').textContent = 
-          dateString.charAt(0).toUpperCase() + dateString.slice(1);
+        const newDateText = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+
+        if (currentTimeElement.textContent !== timeString) {
+           currentTimeElement.textContent = timeString;
+        }
+        if (currentDateElement.textContent !== newDateText) {
+           currentDateElement.textContent = newDateText;
+        }
       }
 
       function updateAppStats(visibleCount = null) {
         const totalVisible = visibleCount !== null ? visibleCount : allApps.filter(app => !hiddenApps.includes(app.packageName)).length;
-        const statsElement = document.getElementById('appStats');
 
-        statsElement.innerHTML = `
-        ${totalVisible} apps • ${favoriteApps.length} favoritos • ${hiddenApps.length} ocultas
-        `;
+        const newStats = `${totalVisible} apps • ${favoriteApps.length} favoritos • ${hiddenApps.length} ocultas`;
+
+        if (appStatsElement.textContent.trim() !== newStats.trim()) {
+           appStatsElement.textContent = newStats;
+        }
       }
 
       function saveAppPositions() {
         localStorage.setItem('appPositions', JSON.stringify(appPositions));
       }
 
-      // ========== FUNCIONES DE UTILIDAD ==========
-
-        // Prevenir acciones por defecto en elementos arrastrables
       document.addEventListener('dragstart', function(e) {
         if (e.target.classList.contains('app-item') || e.target.classList.contains('dock-app')) {
           e.preventDefault();
         }
       });
 
-      // Mejorar el rendimiento del scroll
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
       }
 
-      // Manejar cambios de orientación
       window.addEventListener('orientationchange', function() {
         setTimeout(() => {
           renderApps();
         }, 300);
       });
 
-      // Manejar cambios de tamaño de ventana
       window.addEventListener('resize', function() {
         clearTimeout(window.resizeTimer);
         window.resizeTimer = setTimeout(() => {
@@ -1977,7 +1859,6 @@ box-sizing: border-box;
         }, 250);
       });
 
-      // Exportar funciones globales para debugging
       window.debugLauncher = {
         getAllApps: () => allApps,
         getFavoriteApps: () => favoriteApps,
